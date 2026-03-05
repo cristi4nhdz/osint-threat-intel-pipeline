@@ -1,0 +1,19 @@
+name: osint
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - kafka-python
+      - spacy
+      - transformers
+      - snowflake-connector-python
+      - neo4j
+      - boto3
+      - streamlit
+      - feedparser
+      - requests
+      - pyyaml
