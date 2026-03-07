@@ -1,0 +1,38 @@
+---
+news:
+  poll_interval_seconds: 300
+  
+kafka:
+  bootstrap_servers: localhost:9092
+  topics:
+    news: osint.news
+    mitre: osint.mitre
+    social: osint.social
+    enriched: osint.enriched
+
+snowflake:
+  account: "YOUR_SNOWFLAKE_ACCOUNT_HERE"
+  user: "YOUR_SNOWFLAKE_USER_HERE"
+  password: "YOUR_SNOWFLAKE_PASSWORD_HERE"
+  database: "YOUR_SNOWFLAKE_DATABASE_HERE"
+  schema: "YOUR_SNOWFLAKE_SCHEMA_HERE"
+  warehouse: "YOUR_SNOWFLAKE_WAREHOUSE_HERE"
+
+neo4j:
+  uri: bolt://localhost:7687
+  user: neo4j
+  password: password
+
+aws:
+  bucket_name: "YOUR_BUCKET_NAME_HERE"
+  region: "us-east-1"
+  access_key_id: "YOUR_AWS_ACCESS_KEY_HERE"
+  secret_access_key: "YOUR_AWS_SECRET_HERE"
+
+apis:
+  newsapi_key: "YOUR_NEWSAPI_KEY_HERE"
+  otx_key: "YOUR_OTX_KEY_HERE"
+
+nlp:
+  spacy_model: en_core_web_trf
+  confidence_threshold: 0.75

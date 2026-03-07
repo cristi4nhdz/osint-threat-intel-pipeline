@@ -1,3 +1,4 @@
+---
 name: osint
 channels:
   - conda-forge
@@ -17,3 +18,4 @@ dependencies:
       - feedparser
       - requests
       - pyyaml
+      - newsapi-python

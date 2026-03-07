@@ -1,2 +1,6 @@
 .vscode
 .env
+config/__pycache__
+ingestion/__pycache__
+config/settings.yaml
+logs.log
