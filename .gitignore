@@ -6,3 +6,6 @@ config/settings.yaml
 logs.log
 processing/__pycache__
 ingestion/.mypy_cache
+processing/.mypy_cache
+ingestion/logs/ingestion_logs.log
+processing/logs/processing_logs.log
