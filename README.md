@@ -23,6 +23,8 @@ fetch news from newsapi on topics
 ### Check docker kafka topics
 
 - docker exec -it osint-threat-intel-pipeline-kafka-1 kafka-console-consumer --bootstrap-server localhost:9092 --topic osint.news --from-beginning --max-messages 50
+- docker exec -it osint-threat-intel-pipeline-kafka-1 kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:9092 --topic osint.news
+- docker exec -it osint-threat-intel-pipeline-kafka-1 kafka-topics --bootstrap-server localhost:9092 --delete --topic osint.news
 
 __NOTE__: To load do -> spacy.load('en_core_web_trf')
 
