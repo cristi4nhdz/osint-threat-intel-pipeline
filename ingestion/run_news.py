@@ -9,7 +9,7 @@ from ingestion.news_producer import NewsProducer
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s — %(message)s",
-    handlers=[logging.FileHandler("logs.log"), logging.StreamHandler()],
+    handlers=[logging.FileHandler("ingestion\logs.log"), logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
 
