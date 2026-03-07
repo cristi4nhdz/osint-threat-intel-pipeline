@@ -4,7 +4,7 @@
 import time
 
 
-def retry(max_attempts=3, delay=1.0, backoff=2.0):
+def retry(max_attempts: int = 3, delay: float = 1.0, backoff: float = 2.0):
     """Retries a function with exponential backoff on failure."""
 
     def decorator(func):
