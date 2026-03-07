@@ -11,39 +11,16 @@ from ingestion.base_producer import BaseProducer
 logger = logging.getLogger(__name__)
 
 THREAT_KEYWORDS: tuple[str, ...] = (
-    # attack types
     "cyberattack",
     "ransomware",
+    "APT",
     "malware",
-    "phishing campaign",
-    "zero-day",
+    '"data breach"',
+    '"threat actor"',
+    "vulnerability",
     "exploit",
-    "data breach",
-    "supply chain attack",
-    "zero-day exploit",
-    # threat actors
-    "APT group",
-    "threat actor",
-    "cyber espionage",
-    "Lazarus Group",
-    "Fancy Bear",
-    "Sandworm",
-    # vulnerabilities
-    "CVE",
-    "remote code execution",
-    "critical vulnerability",
-    # malware families
-    "LockBit",
-    "Cobalt Strike",
-    "Emotet",
-    # geopolitical
-    "nation-state attack",
-    "cyber warfare",
-    "state-sponsored hacking",
-    # targeted industries
-    "critical infrastructure attack",
-    "hospital ransomware",
-    "energy grid attack",
+    "phishing",
+    "espionage",
 )
 
 
@@ -67,7 +44,7 @@ class NewsProducer(BaseProducer):
         response = self.client.get_everything(
             q=query,
             language="en",
-            sort_by="publishedAt",
+            sort_by="relevancy",
             page_size=50,
         )
         articles = response.get("articles", [])
