@@ -1,0 +1,106 @@
+---
+threat_actor_hints:
+  # generic patterns
+  - apt
+  - unc
+  - uat
+  - uac
+  - ta
+  # named actors
+  - lazarus
+  - cozy bear
+  - fancy bear
+  - silver dragon
+  - sandworm
+  - charming kitten
+  - hafnium
+  - darkside
+  - unsolicitedbooker
+  - scattered spider
+  - volt typhoon
+  - salt typhoon
+
+malware_hints:
+  # generic
+  - ransomware
+  - malware
+  - spyware
+  - trojan
+  - backdoor
+  - rootkit
+  - botnet
+  - worm
+  - keylogger
+  - infostealer
+  - dropper
+  - loader
+  # tools
+  - cobalt strike
+  - mimikatz
+  - metasploit
+  - exploit kit
+  - brute ratel
+  - sliver
+  - havoc
+  # named malware
+  - coruna
+  - cryptolocker
+  - voidlink
+  - canfail
+  - dohdoor
+  - marssnake
+  - lucidoor
+  - renengine
+  - cyberstrikeai
+
+attack_hints:
+  - phishing
+  - spear phishing
+  - c2
+  - command and control
+  - zero-day
+  - 0-day
+  - exploit
+  - lateral movement
+  - privilege escalation
+  - data exfiltration
+  - ddos
+  - man-in-the-middle
+  - supply chain
+  - credential theft
+  - remote code execution
+  - rce
+  - sql injection
+
+high_signal_terms:
+  - data breach
+  - breach
+  - ransomware attack
+  - zero-day
+  - 0-day
+  - cve-
+  - kev
+  - actively exploited
+  - nation-state
+  - state-sponsored
+  - espionage
+  - cyber espionage
+  - critical infrastructure
+  - apt
+  - unc
+  - uat
+  - uac
+  - vulnerability
+  - malware
+  - phishing
+  - hacking
+  - hacker
+  - cyberattack
+  - cybersecurity
+  - exploit
+  - spyware
+  - backdoor
+  - leaked
+  - exposed
+  - records exposed
+  - personal data
