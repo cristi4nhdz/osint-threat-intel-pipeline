@@ -21,12 +21,17 @@ class BaseProducer:
         """Loads config and initializes Kafka producer."""
         config = load_config()
         self.topics = config["kafka"]["topics"]
+        self.connect_kafka(config["kafka"]["bootstrap_servers"])
+        logger.info("Kafka producer connected.")
+
+    @retry(max_attempts=3, delay=1.0, backoff=2.0)
+    def connect_kafka(self, bootstrap: list[str]) -> None:
+        """Connect to Kafka broker with retry on failure."""
         self.producer = KafkaProducer(
-            bootstrap_servers=config["kafka"]["bootstrap_servers"],
+            bootstrap_servers=bootstrap,
             value_serializer=lambda v: json.dumps(v).encode("utf-8"),
             key_serializer=lambda k: k.encode("utf-8") if k else None,
         )
-        logger.info("Kafka producer connected.")
 
     @retry(max_attempts=3, delay=1.0, backoff=2.0)
     def publish(self, topic: str, message: dict, key: str | None = None) -> None:
