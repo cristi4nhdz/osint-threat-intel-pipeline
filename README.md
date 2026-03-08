@@ -21,7 +21,7 @@ This pipeline pulls cybersecurity and threat intel news from NewsAPI, pushes raw
 
 ## Overview
 
-Pulls cybersecurity and threat intel news from NewsAPI, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output feeds into a dashboard for review. Core ingestion is working, enrichment and dashboard are still being built out.
+Pulls cybersecurity and threat intel news from NewsAPI, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output feeds into a dashboard for review. Core ingestion and enrichment are working, dashboard is still being built out.
 
 ---
 
@@ -41,7 +41,8 @@ Pulls cybersecurity and threat intel news from NewsAPI, pushes raw events into K
 ## Features
 
 - **News Ingestion** — Fetches articles from NewsAPI on configurable topics and publishes them to a Kafka topic
-- **NLP Enrichment** *(in progress)* — Entity extraction and threat signal classification using spaCy's en_core_web_trf transformer model
+- **NLP Enrichment** — Entity extraction and threat signal classification using spaCy's `en_core_web_trf` transformer model, with keyword-based matching for threat actors, malware, and attack techniques
+- **Relevance Scoring** — Articles are scored and filtered before publishing to the enriched topic
 - **Kafka-Backed Event Bus** — Decoupled producer/consumer architecture for resilience and replay capability
 - **Config-Driven** — YAML-based configuration for sources, topics, and pipeline behavior
 - **Containerized** — Full Docker Compose setup for local development
@@ -101,6 +102,12 @@ docker compose up
 python -m ingestion.run_news
 ```
 
+**Run the enrichment pipeline:**
+
+```bash
+python -m processing.run_enrichment
+```
+
 **Shut down:**
 
 ```bash
@@ -116,6 +123,7 @@ osint-threat-intel-pipeline/
 |-- config/               # YAML configuration files
 |-- dashboard/            # Dashboard consumer and visualization
 |-- ingestion/            # News fetching and Kafka producer
+|-- processing/           # NLP enrichment, entity extraction, Kafka consumer
 |-- docker-compose.yml    # Container orchestration
 |-- environment.yaml      # Conda environment spec
 |-- README.md
