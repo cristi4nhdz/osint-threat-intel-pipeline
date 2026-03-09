@@ -1,11 +1,5 @@
 ---
 threat_actor_hints:
-  # generic patterns
-  - apt
-  - unc
-  - uat
-  - uac
-  - ta
   # named actors
   - lazarus
   - cozy bear
@@ -86,10 +80,6 @@ high_signal_terms:
   - espionage
   - cyber espionage
   - critical infrastructure
-  - apt
-  - unc
-  - uat
-  - uac
   - vulnerability
   - malware
   - phishing
