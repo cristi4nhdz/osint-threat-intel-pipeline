@@ -21,6 +21,16 @@ THREAT_KEYWORDS: tuple[str, ...] = (
     "exploit",
     "phishing",
     "espionage",
+    "botnet",
+    "zero-day",
+    "DDoS",
+    "credential stuffing",
+    "supply chain attack",
+    "backdoor",
+    "keylogger",
+    "rootkit",
+    "spyware",
+    "cyber espionage",
 )
 
 
