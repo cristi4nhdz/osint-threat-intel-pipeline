@@ -11,3 +11,5 @@ ingestion/logs/ingestion_logs.log
 processing/logs/processing_logs.log
 storage/__pycache__
 storage/logs/storage_logs.log
+storage/.mypy_cache
+
