@@ -31,7 +31,7 @@ aws:
 
 apis:
   newsapi_key: "YOUR_NEWSAPI_KEY_HERE"
-  otx_key: "YOUR_OTX_KEY_HERE"
+  alienvault_otx_key: "YOUR_OTX_KEY_HERE"
 
 nlp:
   spacy_model: en_core_web_trf
