@@ -44,7 +44,7 @@ Pulls cybersecurity and threat intel news from NewsAPI, pushes raw events into K
 - **News Ingestion** — Fetches articles from NewsAPI on configurable topics and publishes them to a Kafka topic
 - **NLP Enrichment** — Entity extraction and threat signal classification using spaCy's `en_core_web_trf` transformer model, with keyword-based matching for threat actors, malware, and attack techniques
 - **Relevance Scoring** — Articles are scored and filtered before publishing to the enriched topic
-- **Snowflake Storage** *(in progress)* — Enriched articles written to a Snowflake table with threat intel fields and relevance score
+- **Snowflake Storage** — Enriched articles consumed from Kafka and loaded into Snowflake with URL deduplication
 - **Kafka-Backed Event Bus** — Decoupled producer/consumer architecture for resilience and replay capability
 - **Config-Driven** — YAML-based configuration for sources, topics, and pipeline behavior
 - **Containerized** — Full Docker Compose setup for local development
@@ -116,6 +116,12 @@ python -m ingestion.run_news
 python -m processing.run_enrichment
 ```
 
+**Run the Snowflake loader:**
+
+```bash
+python -m storage.run_loader
+```
+
 **Shut down:**
 
 ```bash
@@ -132,7 +138,7 @@ osint-threat-intel-pipeline/
 |-- dashboard/            # Dashboard consumer and visualization
 |-- ingestion/            # News fetching and Kafka producer
 |-- processing/           # NLP enrichment, entity extraction, Kafka consumer
-|-- storage/              # Snowflake setup and writer
+|-- storage/              # Snowflake setup and loader
 |-- docker-compose.yml    # Container orchestration
 |-- environment.yaml      # Conda environment spec
 |-- README.md
