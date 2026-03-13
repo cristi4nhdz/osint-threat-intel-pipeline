@@ -19,3 +19,5 @@ dependencies:
       - requests
       - pyyaml
       - newsapi-python
+      - attackcti
+      - OTXv2

@@ -69,26 +69,35 @@ class EnrichmentConsumer:
     def run(self) -> None:
         """Listens for articles in Kafka, enriches them, and sends them to output topic"""
         logger.info("Listening on %s", self.input_topic)
-        for message in self.consumer:
-            article: dict = message.value
-            try:
-                enriched: dict = self.extractor.extract(article)
+        count = 0
 
-                if enriched["relevance_score"] < self.min_relevance_score:
-                    logger.info(
-                        "Skipped (low relevance %s): %s",
-                        enriched["relevance_score"],
-                        enriched["title"],
-                    )
+        try:
+            for message in self.consumer:
+                article: dict = message.value
+                try:
+                    enriched: dict = self.extractor.extract(article)
+
+                    if enriched["relevance_score"] < self.min_relevance_score:
+                        logger.info(
+                            "Skipped (low relevance %s): %s",
+                            enriched["relevance_score"],
+                            enriched["title"],
+                        )
+                        continue
+
+                    self.publish(enriched, key=enriched["original_url"])
+                    self.flush()
+                    count += 1
+
+                except Exception as e:
+                    logger.error("Failed to process article: %s", e)
                     continue
-
-                self.publish(enriched, key=enriched["original_url"])
-
-                self.flush()
-
-            except Exception as e:
-                logger.error("Failed to process article: %s", e)
-                continue
+        except KeyboardInterrupt:
+            logger.info("Published %d articles", count)
+            logger.info("Shutting down")
+        except Exception as e:
+            logger.info("Published %d articles", count)
+            raise
 
     def close(self) -> None:
         """Close the Kafka consumer and producer."""

@@ -21,10 +21,12 @@ def main() -> None:
     consumer = None
 
     try:
-        consumer = EnrichmentConsumer(min_relevance_score=0.2)
+        try:
+            consumer = EnrichmentConsumer(min_relevance_score=0.2)
+        except Exception as e:
+            logger.error("Failed to initialize EnrichmentConsumer: %s", e)
+            raise
         consumer.run()
-    except KeyboardInterrupt:
-        logger.info("Shutting down")
     except Exception as e:
         logger.error("Pipeline failed: %s", e)
         raise
