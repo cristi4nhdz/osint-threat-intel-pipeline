@@ -2,7 +2,7 @@
 
 > **Work In Progress**
 
-This pipeline pulls cybersecurity and threat intel news from NewsAPI, pushes raw events into Kafka, and runs NLP enrichment using spaCy's transformer models to extract entities and signals. The enriched output feeds into a dashboard for review. Not done yet, but the core ingestion and enrichment stages are in progress.
+This pipeline pulls cybersecurity and threat intel news from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment using spaCy's transformer models to extract entities and signals. The enriched output feeds into a dashboard for review.
 
 ---
 
@@ -21,7 +21,7 @@ This pipeline pulls cybersecurity and threat intel news from NewsAPI, pushes raw
 
 ## Overview
 
-Pulls cybersecurity and threat intel news from NewsAPI, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output feeds into a dashboard for review. Core ingestion and enrichment are working, dashboard is still being built out.
+Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output feeds into a dashboard for review. Core ingestion and enrichment are working, dashboard is still being built out.
 
 ---
 
@@ -42,6 +42,8 @@ Pulls cybersecurity and threat intel news from NewsAPI, pushes raw events into K
 ## Features
 
 - **News Ingestion** — Fetches articles from NewsAPI on configurable topics and publishes them to a Kafka topic
+- **OTX Ingestion** — Fetches recent threat pulses from AlienVault OTX and publishes them to Kafka on a configurable interval
+- **MITRE ATT&CK Ingestion** — Fetches threat groups from MITRE ATT&CK and publishes them to a dedicated Kafka topic
 - **NLP Enrichment** — Entity extraction and threat signal classification using spaCy's `en_core_web_trf` transformer model, with keyword-based matching for threat actors, malware, and attack techniques
 - **Relevance Scoring** — Articles are scored and filtered before publishing to the enriched topic
 - **Snowflake Storage** — Enriched articles consumed from Kafka and loaded into Snowflake with URL deduplication
@@ -58,6 +60,7 @@ Pulls cybersecurity and threat intel news from NewsAPI, pushes raw events into K
 - [Docker](https://www.docker.com/) & Docker Compose
 - [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or Anaconda
 - A [NewsAPI](https://newsapi.org/) API key
+- An [AlienVault OTX](https://otx.alienvault.com/) API key
 
 ### Environment Setup
 
@@ -110,6 +113,18 @@ python -m storage.snowflake_setup
 python -m ingestion.run_news
 ```
 
+**Run the OTX ingestion producer:**
+
+```bash
+python -m ingestion.run_otx
+```
+
+**Run the MITRE ATT&CK ingestion producer:**
+
+```bash
+python -m ingestion.run_mitre
+```
+
 **Run the enrichment pipeline:**
 
 ```bash
@@ -136,7 +151,7 @@ docker compose down
 osint-threat-intel-pipeline/
 |-- config/               # YAML configuration files
 |-- dashboard/            # Dashboard consumer and visualization
-|-- ingestion/            # News fetching and Kafka producer
+|-- ingestion/            # News, OTX, and MITRE ATT&CK producers
 |-- processing/           # NLP enrichment, entity extraction, Kafka consumer
 |-- storage/              # Snowflake setup and loader
 |-- docker-compose.yml    # Container orchestration
