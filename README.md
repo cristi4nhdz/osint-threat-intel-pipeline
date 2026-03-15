@@ -2,7 +2,7 @@
 
 > **Work In Progress**
 
-This pipeline pulls cybersecurity and threat intel news from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment using spaCy's transformer models to extract entities and signals. The enriched output feeds into a dashboard for review.
+This pipeline pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, runs NLP enrichment using spaCy transformer models, loads enriched data into Snowflake, and builds an actor relationship graph in Neo4j.
 
 ---
 
@@ -21,7 +21,7 @@ This pipeline pulls cybersecurity and threat intel news from NewsAPI, AlienVault
 
 ## Overview
 
-Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output feeds into a dashboard for review. Core ingestion and enrichment are working, dashboard is still being built out.
+Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output is loaded into Snowflake for storage and Neo4j for relationship graph building. Dashboard is still being built out.
 
 ---
 
@@ -33,6 +33,7 @@ Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT
 | NLP | spaCy (`en_core_web_trf`) |
 | Messaging | Apache Kafka |
 | Storage | Snowflake |
+| Graph | Neo4j |
 | Orchestration | Docker Compose |
 | Environment | Conda |
 | Linting | flake8, pylint, black, mypy, yamllint |
@@ -47,6 +48,7 @@ Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT
 - **NLP Enrichment** — Entity extraction and threat signal classification using spaCy's `en_core_web_trf` transformer model, with keyword-based matching for threat actors, malware, and attack techniques
 - **Relevance Scoring** — Articles are scored and filtered before publishing to the enriched topic
 - **Snowflake Storage** — Enriched articles consumed from Kafka and loaded into Snowflake with URL deduplication
+- **Neo4j Graph** — Builds an actor relationship graph from enriched articles and MITRE ATT&CK data, linking threat actors, malware, and locations
 - **Kafka-Backed Event Bus** — Decoupled producer/consumer architecture for resilience and replay capability
 - **Config-Driven** — YAML-based configuration for sources, topics, and pipeline behavior
 - **Containerized** — Full Docker Compose setup for local development
@@ -137,6 +139,12 @@ python -m processing.run_enrichment
 python -m storage.run_loader
 ```
 
+**Run the Neo4j graph loader:**
+
+```bash
+python -m storage.run_neo4j
+```
+
 **Shut down:**
 
 ```bash
@@ -153,7 +161,7 @@ osint-threat-intel-pipeline/
 |-- dashboard/            # Dashboard consumer and visualization
 |-- ingestion/            # News, OTX, and MITRE ATT&CK producers
 |-- processing/           # NLP enrichment, entity extraction, Kafka consumer
-|-- storage/              # Snowflake setup and loader
+|-- storage/              # Snowflake and Neo4j loaders
 |-- docker-compose.yml    # Container orchestration
 |-- environment.yaml      # Conda environment spec
 |-- README.md
