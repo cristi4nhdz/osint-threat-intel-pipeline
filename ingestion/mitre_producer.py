@@ -3,6 +3,7 @@
 
 import logging
 from attackcti import attack_client
+from config.decorator import retry
 from ingestion.base_producer import BaseProducer
 
 logger = logging.getLogger(__name__)
@@ -20,10 +21,16 @@ class MitreProducer(BaseProducer):
         self.client = attack_client()
         self.topic = self.topics["mitre"]
 
-    def fetch_and_publish(self) -> int:
-        """Fetches threat groups from MITRE ATT&CK and publishes them to Kafka."""
+    @retry(max_attempts=3, delay=1.0, backoff=2.0)
+    def fetch_groups_from_api(self) -> list[dict]:
+        """Fetch all groups from the MITRE ATT&CK API with retry logic."""
         groups: list = self.client.get_groups()
         logger.info("Fetched %d threat groups from MITRE ATT&CK", len(groups))
+        return groups
+
+    def fetch_and_publish(self) -> int:
+        """Fetches threat groups from MITRE ATT&CK and publishes them to Kafka."""
+        groups: list = self.fetch_groups_from_api()
 
         for group in groups:
             aliases: list = group.get("aliases", []) or []
@@ -51,6 +58,9 @@ class MitreProducer(BaseProducer):
                     "",
                 ),
             }
-            self.publish(self.topic, message, key=message["mitre_id"])
+            try:
+                self.publish(self.topic, message, key=message["mitre_id"])
+            except Exception as e:
+                logger.error("Failed to publish MITRE group %s: %s", message["mitre_id"], e)
 
         return len(groups)
