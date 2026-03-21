@@ -4,9 +4,10 @@
 import sys
 import os
 import streamlit as st
-from dashboard._sections import overview, threat_map, actor_intel, raw_data
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from dashboard._sections import overview, threat_map, actor_graph, actor_intel, raw_data
 
 st.set_page_config(
     page_title="OBSRV",
@@ -240,6 +241,7 @@ hr { border-color: var(--border) !important; margin: 1rem 0 !important; }
 PAGES = {
     "🛡  Overview": overview,
     "🗺  Threat Map": threat_map,
+    "◈  Actor Graph": actor_graph,
     "🎯  Actor Intelligence": actor_intel,
     "🗄  Raw Data": raw_data,
 }
