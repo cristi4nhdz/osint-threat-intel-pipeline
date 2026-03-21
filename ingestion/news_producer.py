@@ -55,7 +55,7 @@ class NewsProducer(BaseProducer):
             q=query,
             language="en",
             sort_by="relevancy",
-            page_size=50,
+            page_size=100,
         )
         articles = response.get("articles", [])
         logger.info("Fetched %d articles from NewsAPI", len(articles))
