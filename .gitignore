@@ -12,4 +12,6 @@ processing/logs/processing_logs.log
 storage/__pycache__
 storage/logs/storage_logs.log
 storage/.mypy_cache
-
+dashboard/__pycache__
+dashboard/.mypy_cache
+dashboard/_sections/__pycache__
