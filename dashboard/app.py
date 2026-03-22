@@ -55,6 +55,11 @@ footer, [data-testid="stToolbar"] { display: none !important; }
     background: var(--panel) !important;
     border-right: 1px solid var(--border) !important;
 }
+[data-testid="collapsedControl"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
 
 /* headings */
 h1 {
@@ -148,7 +153,22 @@ hr { border-color: var(--border) !important; margin: 1rem 0 !important; }
     color: var(--accent) !important;
 }
 
-/* ── reusable components ── */
+/* download button */
+[data-testid="stDownloadButton"] > button {
+    background: var(--panel) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--accent) !important;
+    font-family: var(--mono) !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 0.05em !important;
+    border-radius: 2px !important;
+}
+[data-testid="stDownloadButton"] > button:hover {
+    border-color: var(--accent) !important;
+    background: rgba(176,110,255,0.08) !important;
+}
+
+/* reusable components */
 .section-label {
     font-family: var(--mono);
     font-size: 0.6rem;
@@ -238,6 +258,71 @@ hr { border-color: var(--border) !important; margin: 1rem 0 !important; }
     unsafe_allow_html=True,
 )
 
+
+def get_pipeline_status() -> dict:
+    """Ping each backend service and return a status/detail pair for each."""
+
+    status = {}
+
+    # Check Snowflake by counting total ingested articles
+    try:
+        from dashboard.db import sf_query
+
+        r = sf_query("SELECT COUNT(*) as n FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES")
+        status["snowflake"] = ("ok", f"{int(r['N'][0]):,} articles")
+    except Exception:
+        status["snowflake"] = ("err", "disconnected")
+
+    # Check Neo4j by counting threat actor nodes
+    try:
+        from dashboard.db import get_neo4j
+
+        driver = get_neo4j()
+        driver.verify_connectivity()
+        with driver.session() as s:
+            n = s.run("MATCH (a:ThreatActor) RETURN count(a) as n").single()["n"]
+        status["neo4j"] = ("ok", f"{n} actors")
+    except Exception:
+        status["neo4j"] = ("err", "disconnected")
+
+    # Check Kafka by listing osint.* topics with a short timeout
+    try:
+        from kafka import KafkaConsumer
+        from config.config_loader import load_config
+
+        config = load_config()
+        c = KafkaConsumer(
+            bootstrap_servers=config["kafka"]["bootstrap_servers"],
+            request_timeout_ms=2000,
+            api_version_auto_timeout_ms=2000,
+        )
+        topics = [t for t in c.topics() if t.startswith("osint.")]
+        c.close()
+        status["kafka"] = ("ok", f"{len(topics)} topics")
+    except Exception:
+        status["kafka"] = ("err", "disconnected")
+
+    # Check data freshness: warn if >2h old, error if >24h
+    try:
+        from dashboard.db import sf_query
+
+        r = sf_query(
+            "SELECT DATEDIFF('hour', MAX(INSERTED_AT), CURRENT_TIMESTAMP()) as h "
+            "FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES"
+        )
+        h = int(r["H"][0])
+        if h < 2:
+            status["freshness"] = ("ok", f"{h}h ago")
+        elif h < 24:
+            status["freshness"] = ("warn", f"{h}h ago")
+        else:
+            status["freshness"] = ("err", f"{h}h ago")
+    except Exception:
+        status["freshness"] = ("err", "unknown")
+
+    return status
+
+
 PAGES = {
     "🛡  Overview": overview,
     "🗺  Threat Map": threat_map,
@@ -265,5 +350,52 @@ with st.sidebar:
     )
 
     selection = st.radio("", list(PAGES.keys()), label_visibility="collapsed")
+
+    # Live status indicators for each backend service
+    st.markdown(
+        """
+    <div style='margin-top:24px;padding-top:12px;border-top:1px solid #2A1C38;
+                font-family:IBM Plex Mono,monospace;font-size:0.58rem;
+                color:#344858;text-transform:uppercase;letter-spacing:0.14em;
+                padding-bottom:6px;'>Pipeline</div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    status = get_pipeline_status()
+
+    STATUS_COLORS = {
+        "ok": ("#00E676", "0 0 5px #00E676"),
+        "warn": ("#FFB800", "0 0 5px #FFB800"),
+        "err": ("#FF4D4D", "0 0 5px #FF4D4D"),
+    }
+
+    STATUS_LABELS = {
+        "snowflake": "Snowflake",
+        "neo4j": "Neo4j",
+        "kafka": "Kafka",
+        "freshness": "Freshness",
+    }
+
+    # Build status rows as inline HTML with colored indicator dots
+    rows_html = ""
+    for key, label in STATUS_LABELS.items():
+        state, detail = status.get(key, ("err", "unknown"))
+        color, shadow = STATUS_COLORS[state]
+        rows_html += (
+            "<div style='display:flex;justify-content:space-between;"
+            "align-items:center;padding:4px 0;"
+            "border-bottom:1px solid #1A1228;"
+            "font-family:IBM Plex Mono,monospace;'>"
+            "<div style='display:flex;align-items:center;gap:6px;'>"
+            f"<span style='display:inline-block;width:5px;height:5px;"
+            f"border-radius:50%;background:{color};box-shadow:{shadow};'></span>"
+            f"<span style='font-size:0.6rem;color:#7A90A4;'>{label}</span>"
+            "</div>"
+            f"<span style='font-size:0.58rem;color:{color};'>{detail}</span>"
+            "</div>"
+        )
+
+    st.markdown(rows_html, unsafe_allow_html=True)
 
 PAGES[selection].show()
