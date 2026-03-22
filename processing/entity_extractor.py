@@ -6,6 +6,15 @@ import re
 from pathlib import Path
 import spacy
 import yaml
+from processing.actor_data import (
+    ACTOR_NORMALIZE,
+    MITRE_ORIGINS,
+    MALWARE_BLOCKLIST,
+    ORG_BLOCKLIST,
+    ACTOR_BLOCKLIST,
+    LOCATION_NORMALIZE,
+    LOCATION_BLOCKLIST,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +36,80 @@ try:
 except (FileNotFoundError, KeyError) as e:
     logger.error("Failed to load keywords.yaml: %s", e)
     raise RuntimeError(f"Failed to load keywords.yaml: {e}") from e
+
+ORIGIN_PATTERNS = re.compile(
+    r"\b(chinese|russian|iranian|north korean|pakistani|indian|vietnamese|"
+    r"israeli|lebanese|belarusian|turkish|from|based in|linked to|"
+    r"attributed to|nexus|sponsored by|state.sponsored|nation.state)\b",
+    re.IGNORECASE,
+)
+
+TARGET_PATTERNS = re.compile(
+    r"\b(target|attack|breach|compromise|espionage|intrusion|hack|exploit|"
+    r"against|victim|infected|hit|struck|impacted|affected|campaign against)\b",
+    re.IGNORECASE,
+)
+
+
+def normalize_actor(name: str) -> str:
+    """Normalize threat actor names using ACTOR_NORMALIZE mapping."""
+
+    return ACTOR_NORMALIZE.get(name.lower().strip(), name.strip())
+
+
+def normalize_location(loc: str) -> str | None:
+    """Normalize location names using LOCATION_NORMALIZE, or skip if blocklisted."""
+
+    stripped = loc.strip()
+    lower = stripped.lower()
+
+    if lower in LOCATION_BLOCKLIST:
+        return None
+
+    return LOCATION_NORMALIZE.get(lower, stripped)
+
+
+def classify_locations(doc) -> tuple[list[str], list[str]]:
+    """Classify locations as origin or target."""
+
+    origins = []
+    targets = []
+    seen = set()
+
+    for sent in doc.sents:
+
+        sent_text = sent.text
+        sent_locs = [e for e in sent.ents if e.label_ in ("GPE", "LOC")]
+
+        for ent in sent_locs:
+
+            normalized = normalize_location(ent.text)
+
+            if not normalized or normalized.lower() in seen:
+                continue
+
+            seen.add(normalized.lower())
+
+            start = max(0, ent.start_char - 50)
+            end = min(len(sent_text), ent.end_char + 50)
+            context = sent_text[start:end]
+
+            has_origin = bool(ORIGIN_PATTERNS.search(context))
+            has_target = bool(TARGET_PATTERNS.search(context))
+
+            if has_origin and not has_target:
+                origins.append(normalized)
+
+            elif has_target:
+                targets.append(normalized)
+
+            else:
+                if re.search(r"'s\s+\w+", context, re.IGNORECASE):
+                    origins.append(normalized)
+                else:
+                    targets.append(normalized)
+
+    return list(dict.fromkeys(origins)), list(dict.fromkeys(targets))
 
 
 def match_keywords(text: str, hints: list[str], extras: list[str]) -> list[str]:
@@ -64,18 +147,48 @@ class EntityExtractor:
         text = f"{article.get('title', '')} {article.get('content', '')}"
         doc = self.nlp(text[:5000])
 
-        orgs = [e.text for e in doc.ents if e.label_ == "ORG"]
-        locs = [e.text for e in doc.ents if e.label_ in ("GPE", "LOC")]
+        orgs = [
+            e.text
+            for e in doc.ents
+            if e.label_ == "ORG" and e.text.lower().strip() not in ORG_BLOCKLIST
+        ]
         persons = [e.text for e in doc.ents if e.label_ == "PERSON"]
 
         text_lower = text.lower()
 
         actor_ids = [m.group(0).upper() for m in THREAT_ACTOR_PATTERN.finditer(text)]
 
-        threat_actors = list(
-            set(match_keywords(text_lower, THREAT_ACTOR_HINTS, orgs) + actor_ids)
-        )
-        malware = match_keywords(text_lower, MALWARE_HINTS, [])
+        raw_actors = match_keywords(text_lower, THREAT_ACTOR_HINTS, orgs) + actor_ids
+
+        threat_actors = [
+            a
+            for a in list(dict.fromkeys(normalize_actor(a) for a in raw_actors))
+            if a.lower().strip() not in ACTOR_BLOCKLIST
+        ]
+
+        origin_locs, target_locs = classify_locations(doc)
+
+        for actor in threat_actors:
+
+            canonical = ACTOR_NORMALIZE.get(actor.lower(), actor)
+            known_origin = MITRE_ORIGINS.get(canonical)
+
+            if known_origin:
+
+                norm = normalize_location(known_origin) or known_origin
+
+                if norm in target_locs:
+                    target_locs.remove(norm)
+
+                if norm not in origin_locs:
+                    origin_locs.append(norm)
+
+        raw_malware = match_keywords(text_lower, MALWARE_HINTS, [])
+        malware = [
+            m
+            for m in raw_malware
+            if m.lower().strip() not in MALWARE_BLOCKLIST and len(m.strip()) > 2
+        ]
         attack_techniques = match_keywords(text_lower, ATTACK_HINTS, [])
         relevance_score = score_relevance(text_lower)
 
@@ -85,8 +198,9 @@ class EntityExtractor:
             "original_url": article.get("url", ""),
             "published_at": article.get("published_at", ""),
             "threat_actors": threat_actors,
-            "malware": list(set(malware)),
-            "locations": list(set(locs)),
+            "malware": list(dict.fromkeys(malware)),
+            "locations": target_locs,
+            "origin_locations": origin_locs,
             "persons": list(set(persons)),
             "organizations": list(set(orgs)),
             "attack_techniques": list(set(attack_techniques)),

@@ -6,6 +6,7 @@ import logging
 from neo4j import GraphDatabase
 from kafka import KafkaConsumer
 from config.config_loader import load_config
+from processing.actor_data import ACTOR_NORMALIZE, MITRE_ORIGINS
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +14,10 @@ logger = logging.getLogger(__name__)
 def create_mitre_group(tx, group: dict) -> None:
     """Merge a MITRE ATT&CK group node and set its properties."""
 
+    raw_name = group.get("name", "")
+    name = ACTOR_NORMALIZE.get(raw_name.lower(), raw_name)
+
+    # create MITRE ATT&CK group
     tx.run(
         """
         MERGE (a:ThreatActor {mitre_id: $mitre_id})
@@ -22,7 +27,7 @@ def create_mitre_group(tx, group: dict) -> None:
             a.aliases = $aliases
     """,
         mitre_id=group.get("mitre_id", ""),
-        name=group.get("name", ""),
+        name=name,
         description=group.get("description", "")[:500],
         url=group.get("url", ""),
         aliases=group.get("aliases", []),
@@ -31,6 +36,11 @@ def create_mitre_group(tx, group: dict) -> None:
 
 def create_article_graph(tx, article: dict) -> None:
     """Merge an article node and link it to actors, malware, and locations."""
+
+    url = article.get("original_url", "")
+    actors = article.get("threat_actors", [])
+    malware = article.get("malware", [])
+    locs = article.get("locations", [])
 
     # create article node
     tx.run(
@@ -41,7 +51,7 @@ def create_article_graph(tx, article: dict) -> None:
             art.published_at = $published_at,
             art.relevance_score = $relevance_score
     """,
-        url=article.get("original_url", ""),
+        url=url,
         title=article.get("title", ""),
         source=article.get("source", ""),
         published_at=article.get("published_at", ""),
@@ -49,7 +59,7 @@ def create_article_graph(tx, article: dict) -> None:
     )
 
     # link threat actor
-    for actor in article.get("threat_actors", []):
+    for actor in actors:
         tx.run(
             """
             MERGE (a:ThreatActor {name: $name})
@@ -57,37 +67,26 @@ def create_article_graph(tx, article: dict) -> None:
             MERGE (art)-[:MENTIONS_ACTOR]->(a)
         """,
             name=actor,
-            url=article.get("original_url", ""),
+            url=url,
         )
 
     # link malware
-    for malware in article.get("malware", []):
+    for mal in malware:
         tx.run(
             """
             MERGE (m:Malware {name: $name})
             MERGE (art:Article {url: $url})
             MERGE (art)-[:MENTIONS_MALWARE]->(m)
-            MERGE (art)-[:USES]->(m)
         """,
-            name=malware,
-            url=article.get("original_url", ""),
+            name=mal,
+            url=url,
         )
 
-    # link location
-    for location in article.get("locations", []):
-        tx.run(
-            """
-            MERGE (l:Location {name: $name})
-            MERGE (art:Article {url: $url})
-            MERGE (art)-[:TARGETS]->(l)
-        """,
-            name=location,
-            url=article.get("original_url", ""),
-        )
+    if len(actors) == 1:
+        actor = actors[0]
 
-    # link threat actors to malware
-    for actor in article.get("threat_actors", []):
-        for malware in article.get("malware", []):
+        # link actor -> malware
+        for mal in malware:
             tx.run(
                 """
                 MERGE (a:ThreatActor {name: $actor})
@@ -95,12 +94,11 @@ def create_article_graph(tx, article: dict) -> None:
                 MERGE (a)-[:USES]->(m)
             """,
                 actor=actor,
-                malware=malware,
+                malware=mal,
             )
 
-    # link threat actors to locations
-    for actor in article.get("threat_actors", []):
-        for location in article.get("locations", []):
+        # link actor -> locations
+        for loc in locs:
             tx.run(
                 """
                 MERGE (a:ThreatActor {name: $actor})
@@ -108,7 +106,46 @@ def create_article_graph(tx, article: dict) -> None:
                 MERGE (a)-[:TARGETS]->(l)
             """,
                 actor=actor,
-                location=location,
+                location=loc,
+            )
+
+    elif len(actors) > 1:
+        # link actor -> locations (skip origin)
+        for actor in actors:
+
+            canonical = ACTOR_NORMALIZE.get(actor.lower(), actor)
+            known_origin = MITRE_ORIGINS.get(canonical)
+
+            for loc in locs:
+
+                if known_origin and loc == known_origin:
+                    continue
+
+                tx.run(
+                    """
+                    MERGE (a:ThreatActor {name: $actor})
+                    MERGE (l:Location {name: $location})
+                    MERGE (a)-[:TARGETS]->(l)
+                    """,
+                    actor=actor,
+                    location=loc,
+                )
+
+    # link actor -> origin country
+    for actor in actors:
+
+        canonical = ACTOR_NORMALIZE.get(actor.lower(), actor)
+        known = MITRE_ORIGINS.get(canonical)
+
+        if known:
+            tx.run(
+                """
+                MERGE (a:ThreatActor {name: $actor})
+                MERGE (c:Country {name: $country})
+                MERGE (a)-[:ORIGINATES_FROM]->(c)
+            """,
+                actor=actor,
+                country=known,
             )
 
 
@@ -175,6 +212,26 @@ class Neo4jLoader:
                     logger.info(
                         "MITRE group: %s (%s)", group.get("name"), group.get("mitre_id")
                     )
+
+        logger.info("Seeding origin relationships")
+
+        with self.driver.session() as session:
+
+            for actor_name, country in MITRE_ORIGINS.items():
+
+                display_name = ACTOR_NORMALIZE.get(actor_name.lower(), actor_name)
+
+                session.run(
+                    """
+                    MATCH (a:ThreatActor)
+                    WHERE a.name = $name OR a.name = $display_name
+                    MERGE (c:Country {name: $country})
+                    MERGE (a)-[:ORIGINATES_FROM]->(c)
+                    """,
+                    name=actor_name,
+                    display_name=display_name,
+                    country=country,
+                )
 
         logger.info("Loaded %d MITRE groups into Neo4j.", count)
 

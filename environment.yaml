@@ -21,3 +21,6 @@ dependencies:
       - newsapi-python
       - attackcti
       - OTXv2
+      - plotly 
+      - pandas
+      - pydeck

@@ -2,7 +2,7 @@
 
 > **Work In Progress**
 
-This pipeline pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, runs NLP enrichment using spaCy transformer models, loads enriched data into Snowflake, and builds an actor relationship graph in Neo4j.
+This pipeline pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, runs NLP enrichment using spaCy transformer models, loads enriched data into Snowflake, builds an actor relationship graph in Neo4j, and visualizes everything in a Streamlit dashboard.
 
 ---
 
@@ -21,7 +21,7 @@ This pipeline pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX,
 
 ## Overview
 
-Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output is loaded into Snowflake for storage and Neo4j for relationship graph building. Dashboard is still being built out.
+Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output is loaded into Snowflake for storage and Neo4j for relationship graph building. A Streamlit dashboard provides live visualization of threats, actors, and geo activity.
 
 ---
 
@@ -34,6 +34,7 @@ Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT
 | Messaging | Apache Kafka |
 | Storage | Snowflake |
 | Graph | Neo4j |
+| Dashboard | Streamlit, Plotly, D3.js |
 | Orchestration | Docker Compose |
 | Environment | Conda |
 | Linting | flake8, pylint, black, mypy, yamllint |
@@ -49,6 +50,8 @@ Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, and MITRE ATT
 - **Relevance Scoring** — Articles are scored and filtered before publishing to the enriched topic
 - **Snowflake Storage** — Enriched articles consumed from Kafka and loaded into Snowflake with URL deduplication
 - **Neo4j Graph** — Builds an actor relationship graph from enriched articles and MITRE ATT&CK data, linking threat actors, malware, and locations
+- **Streamlit Dashboard** — Five-page live dashboard with overview metrics, geo threat map, interactive D3 actor graph, MITRE ATT&CK actor intelligence, and raw data explorer with CSV export
+- **Live Pipeline Status** — Sidebar indicators for Snowflake, Neo4j, Kafka, and data freshness
 - **Kafka-Backed Event Bus** — Decoupled producer/consumer architecture for resilience and replay capability
 - **Config-Driven** — YAML-based configuration for sources, topics, and pipeline behavior
 - **Containerized** — Full Docker Compose setup for local development
@@ -145,6 +148,12 @@ python -m storage.run_loader
 python -m storage.run_neo4j
 ```
 
+**Run the Dashboard:**
+
+```bash
+streamlit run dashboard/app.py
+```
+
 **Shut down:**
 
 ```bash
@@ -158,7 +167,8 @@ docker compose down
 ```text
 osint-threat-intel-pipeline/
 |-- config/               # YAML configuration files
-|-- dashboard/            # Dashboard consumer and visualization
+|-- dashboard/            # Streamlit dashboard and page sections
+|   |-- _sections/        # Overview, threat map, actor graph, actor intel, raw data
 |-- ingestion/            # News, OTX, and MITRE ATT&CK producers
 |-- processing/           # NLP enrichment, entity extraction, Kafka consumer
 |-- storage/              # Snowflake and Neo4j loaders
