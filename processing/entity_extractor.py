@@ -38,16 +38,23 @@ except (FileNotFoundError, KeyError) as e:
     raise RuntimeError(f"Failed to load keywords.yaml: {e}") from e
 
 ORIGIN_PATTERNS = re.compile(
-    r"\b(chinese|russian|iranian|north korean|pakistani|indian|vietnamese|"
-    r"israeli|lebanese|belarusian|turkish|from|based in|linked to|"
-    r"attributed to|nexus|sponsored by|state.sponsored|nation.state)\b",
-    re.IGNORECASE,
+    r"\b("
+    r"chinese|russian|iranian|north korean|pakistani|indian|vietnamese|"
+    r"israeli|lebanese|belarusian|turkish|south korean|american|british|"
+    r"from|based in|linked to|attributed to|nexus|sponsored by|state[-\s]?sponsored|nation[-\s]?state|"
+    r"foreign|domestic|national|transnational"
+    r")\b",
+    re.IGNORECASE
 )
 
 TARGET_PATTERNS = re.compile(
-    r"\b(target|attack|breach|compromise|espionage|intrusion|hack|exploit|"
-    r"against|victim|infected|hit|struck|impacted|affected|campaign against)\b",
-    re.IGNORECASE,
+    r"\b("
+    r"target|attack|breach|compromise|espionage|intrusion|hack|exploit|"
+    r"against|victim|infected|hit|struck|impacted|affected|campaign against|"
+    r"data exfiltration|credential theft|denial of service|ransomware attack|"
+    r"security incident|penetration|unauthorized access|system compromise"
+    r")\b",
+    re.IGNORECASE
 )
 
 

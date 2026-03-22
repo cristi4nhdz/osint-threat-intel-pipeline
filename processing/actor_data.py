@@ -454,3 +454,5 @@ MITRE_ORIGINS = {
     "Inception": "Unknown",
     "UNC6353": "Unknown",
 }
+
+ACTOR_ORIGINS = {k.lower(): v for k, v in MITRE_ORIGINS.items()}
