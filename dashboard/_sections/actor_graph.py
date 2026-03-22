@@ -63,7 +63,7 @@ text {{ font-size:11px; fill:#7A90A4; font-family:monospace; pointer-events:none
 .ptag-accent {{ color:#B06EFF; border-color:rgba(176,110,255,0.3); background:rgba(176,110,255,0.06); }}
 .ptag-red    {{ color:#FF4D4D; border-color:rgba(255,77,77,0.3);  background:rgba(255,77,77,0.06); }}
 .ptag-amber  {{ color:#FFB800; border-color:rgba(255,184,0,0.3);  background:rgba(255,184,0,0.06); }}
-.ptag-purple {{ color:#A855F7; border-color:rgba(168,85,247,0.3); background:rgba(168,85,247,0.06); }}
+.ptag-purple {{ color:#00E676; border-color:rgba(168,85,247,0.3); background:rgba(168,85,247,0.06); }}
 .ptag-grey   {{ color:#7A90A4; border-color:rgba(120,120,120,0.3); background:rgba(120,120,120,0.06); }}
 .ptag-dim    {{ color:#7A90A4; border-color:#2A1C38; }}
 .mlink {{ color:#B06EFF; text-decoration:none; font-size:9px; display:inline-block; margin-top:8px; }}
@@ -85,7 +85,7 @@ text {{ font-size:11px; fill:#7A90A4; font-family:monospace; pointer-events:none
     <span><span class="dot" style="background:#FF4D4D;box-shadow:0 0 4px #FF4D4D;"></span>Target</span>
     <span><span class="dot" style="background:#FFB800;box-shadow:0 0 4px #FFB800;"></span>Origin</span>
     <span><span class="dot" style="background:#555;"></span>Unknown</span>
-    <span><span class="dot" style="background:#A855F7;box-shadow:0 0 4px #A855F7;"></span>Malware</span>
+    <span><span class="dot" style="background:#00E676;box-shadow:0 0 4px #00E676;"></span>Malware</span>
     <span style="color:#2A1C38;">|</span>
     <span><span class="ln" style="background:rgba(255,77,77,0.6);"></span>Targets</span>
     <span><span class="ln" style="background:rgba(255,184,0,0.6);"></span>Origin</span>
@@ -97,7 +97,7 @@ text {{ font-size:11px; fill:#7A90A4; font-family:monospace; pointer-events:none
 <script>
 const NODES = {nodes_json};
 const LINKS = {edges_json};
-const COLORS = {{ actor:"#B06EFF", target:"#FF4D4D", origin:"#FFB800", malware:"#A855F7", unknown:"#555555" }};
+const COLORS = {{ actor:"#B06EFF", target:"#FF4D4D", origin:"#FFB800", malware:"#00E676", unknown:"#555555" }};
 let zoom, svgSel, labelSel, showLabels = true;
 
 function nodeColor(d) {{
@@ -399,7 +399,7 @@ def show() -> None:
         f"ACTORS: <span style='color:{ACCENT};'>{ac}</span> &nbsp;"
         f"TARGETS: <span style='color:#FF4D4D;'>{tc}</span> &nbsp;"
         f"ORIGINS: <span style='color:#FFB800;'>{oc}</span> &nbsp;"
-        f"MALWARE: <span style='color:#A855F7;'>{mc}</span> &nbsp;"
+        f"MALWARE: <span style='color:#00E676;'>{mc}</span> &nbsp;"
         f"EDGES: <span style='color:#7A90A4;'>{len(edges)}</span>"
         "</div>",
         unsafe_allow_html=True,
