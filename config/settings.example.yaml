@@ -9,6 +9,7 @@ kafka:
     mitre: osint.mitre
     social: osint.social
     enriched: osint.enriched
+    iocs: osint.iocs
 
 snowflake:
   account: "YOUR_SNOWFLAKE_ACCOUNT_HERE"
@@ -32,6 +33,7 @@ aws:
 apis:
   newsapi_key: "YOUR_NEWSAPI_KEY_HERE"
   alienvault_otx_key: "YOUR_OTX_KEY_HERE"
+  abuse_ch: "YOUR_ABUSE_CH_KEY_HERE"
 
 nlp:
   spacy_model: en_core_web_trf
