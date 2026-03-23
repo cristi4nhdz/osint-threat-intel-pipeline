@@ -31,7 +31,7 @@ def main() -> None:
             logger.error("Failed to initialize OTXProducer: %s", e)
             raise
         while True:
-            count = producer.fetch_and_publish(max_pulses=100)
+            count = producer.fetch_and_publish(max_pulses=1000)
             logger.info(
                 "Published %d pulses, sleeping %ds",
                 count,
