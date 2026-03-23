@@ -128,7 +128,7 @@ class RSSProducer(BaseProducer):
 
             published = 0
             for entry in entries[:max_per_feed]:
-                published_at = self._parse_date(entry)
+                published_at = self.parse_date(entry)
                 content = entry.get("summary", "") or entry.get("description", "") or ""
                 link = entry.get("link", "")
 
@@ -160,7 +160,7 @@ class RSSProducer(BaseProducer):
         return total
 
     @staticmethod
-    def _parse_date(entry: dict) -> str:
+    def parse_date(entry: dict) -> str:
         """Extract and normalize the publication date from an RSS entry."""
         
         # try structured date first
