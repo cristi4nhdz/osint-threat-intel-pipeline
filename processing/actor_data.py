@@ -49,6 +49,7 @@ MALWARE_BLOCKLIST = MALWARE_GENERIC | {
     "file",
     "document",
     "email",
+    "lockbit ransomware",
 }
 
 # Organizations or platforms to ignore as entities
@@ -101,48 +102,130 @@ ACTOR_BLOCKLIST = {
     "telegram",
     "github",
     "playcrypt",
+    "hive",
+    "grief",
+    "cloak",
+    # MITRE ATT&CK tactic IDs — not actors
+    "ta0001",
+    "ta0002",
+    "ta0003",
+    "ta0004",
+    "ta0005",
+    "ta0006",
+    "ta0007",
+    "ta0008",
+    "ta0009",
+    "ta0010",
+    "ta0011",
+    "ta0040",
+    "ta0042",
+    "ta0043",
+    # parsing artifacts
+    "ung0002 seqrite apt-team",
 }
 
 # Normalize location variations to canonical names
 LOCATION_NORMALIZE = {
+    # United States
     "us": "United States",
+    "usa": "United States",
     "u.s.": "United States",
     "u.s": "United States",
     "the united states": "United States",
     "the u.s.": "United States",
+    "the united states'": "United States",
+    "the united states\u2019": "United States",
+    "the united states\u2018": "United States",
+    "the united states\u2019s": "United States",
     "america": "United States",
+    "u.s.-based": "United States",
+    "michigan": "United States",
+    "los angeles": "United States",
+    "city of los angels": "United States",
+    "city of los angeles": "United States",
+    "scottsdale": "United States",
+    "bay area": "United States",
+    "arizona": "United States",
+    "california": "United States",
+    "north carolina": "United States",
+    "la": "United States",
+    "foster city": "United States",
+    "cornelius": "United States",
+    # United Kingdom
     "uk": "United Kingdom",
     "u.k.": "United Kingdom",
     "u.k": "United Kingdom",
     "the united kingdom": "United Kingdom",
     "britain": "United Kingdom",
     "great britain": "United Kingdom",
+    # North Korea
     "north korea's": "North Korea",
     "north koreas": "North Korea",
+    "north korea\u2019s": "North Korea",
     "dprk": "North Korea",
     "democratic people's republic of korea": "North Korea",
+    # South Korea
     "republic of korea": "South Korea",
     "rok": "South Korea",
+    "south korea's": "South Korea",
+    "south korea s": "South Korea",
+    "south korea\u2019s": "South Korea",
+    # Russia
     "russian federation": "Russia",
     "the russian federation": "Russia",
+    "perm": "Russia",
+    # China
     "prc": "China",
     "people's republic of china": "China",
+    "wuhan": "China",
+    "beijing": "China",
+    # Iran
     "islamic republic of iran": "Iran",
     "the iran": "Iran",
+    # Middle East
     "the middle east": "Middle East",
     "middle eastern": "Middle East",
     "the gulf": "Middle East",
     "gulf states": "Middle East",
+    "the gulf states": "Middle East",
     "gulf": "Middle East",
+    "the persian gulf": "Middle East",
+    "persian gulf": "Middle East",
+    "mena": "Middle East",
+    # UAE
     "dubai": "United Arab Emirates",
+    "uae": "United Arab Emirates",
+    "emirates": "United Arab Emirates",
+    # Europe
     "eu": "Europe",
     "european union": "Europe",
     "european": "Europe",
+    "western europe": "Europe",
+    # Southeast Asia
     "southeast asi": "Southeast Asia",
     "south east asia": "Southeast Asia",
     "se asia": "Southeast Asia",
-    "uae": "United Arab Emirates",
-    "emirates": "United Arab Emirates",
+    "the southeast asia": "Southeast Asia",
+    # Latin America
+    "latam": "Latin America",
+    "latin america": "Latin America",
+    # Asia-Pacific
+    "apac": "Asia-Pacific",
+    # Germany (foreign language variants)
+    "deutschland": "Germany",
+    # Netherlands
+    "the netherlands": "Netherlands",
+    # Canada
+    "kanada": "Canada",
+    # North America
+    "nordamerika": "North America",
+    # Kazakhstan
+    "karaganda": "Kazakhstan",
+    # Spain
+    "madrid": "Spain",
+    # Asia
+    "south asia": "South Asia",
+    "central asia": "Central Asia",
 }
 
 # Locations that are too generic or non-geographic
@@ -162,98 +245,228 @@ LOCATION_BLOCKLIST = {
     "ios",
     "linux",
     "macos",
+    # too vague / partial
+    "south",
+    "central",
+    "southeast",
+    "americas",
+    "global",
+    "worldwide",
+    "international",
+    "region",
+    "domestic",
+    "foreign",
+    "local",
+    "atlantic",
+    # not locations
+    "suojelupoliisi",
+    "vojensk\u00e9",
+    "go",
+    "the southern district of new york",
+    "southern district of new york",
 }
 
 # Map aliases/nicknames to canonical MITRE threat actor names
 ACTOR_NORMALIZE = {
-    # APT28 aliases
-    "fancy bear": "APT28",  # Fancy Bear
-    "strontium": "APT28",  # Strontium
-    "sofacy": "APT28",  # Sofacy
-    "pawn storm": "APT28",  # Pawn Storm
-    "sednit": "APT28",  # Sednit
-    "forest blizzard": "APT28",  # Forest Blizzard
-    "iron twilight": "APT28",  # Iron Twilight
-    "uac-0001": "APT28",  # UAC-0001
-    # APT29 aliases
-    "cozy bear": "APT29",  # Cozy Bear
-    "midnight blizzard": "APT29",  # Midnight Blizzard
-    "nobelium": "APT29",  # Nobelium
-    "the dukes": "APT29",  # The Dukes
-    # APT41 aliases
+    # APT28
+    "fancy bear": "APT28",
+    "strontium": "APT28",
+    "sofacy": "APT28",
+    "pawn storm": "APT28",
+    "sednit": "APT28",
+    "forest blizzard": "APT28",
+    "iron twilight": "APT28",
+    "uac-0001": "APT28",
+    # APT29
+    "cozy bear": "APT29",
+    "midnight blizzard": "APT29",
+    "nobelium": "APT29",
+    "the dukes": "APT29",
+    # APT41
     "silver dragon": "APT41",
     "wicked panda": "APT41",
     "brass typhoon": "APT41",
     "barium": "APT41",
     "double dragon": "APT41",
-    # APT37 aliases
+    # APT37 / ScarCruft
     "scarcruft": "APT37",
     "inky squid": "APT37",
     "inkysquid": "APT37",
     "reaper": "APT37",
     "group123": "APT37",
-    # Lazarus Group aliases
+    "apt-c-28": "APT37",
+    # Lazarus Group
     "lazarus": "Lazarus Group",
+    "lazarus group": "Lazarus Group",
+    "lazarus it workers": "Lazarus Group",
     "hidden cobra": "Lazarus Group",
     "guardians of peace": "Lazarus Group",
     "zinc": "Lazarus Group",
-    # Sandworm Team aliases
+    # Sandworm Team
     "sandworm": "Sandworm Team",
+    "sandworm team": "Sandworm Team",
     "voodoo bear": "Sandworm Team",
     "telebots": "Sandworm Team",
     "electrum": "Sandworm Team",
     "iron viking": "Sandworm Team",
-    # Magic Hound aliases
+    "seashell blizzard": "Sandworm Team",
+    # Magic Hound
     "charming kitten": "Magic Hound",
     "phosphorus": "Magic Hound",
     "ta453": "Magic Hound",
     "cobalt illusion": "Magic Hound",
     "apt35": "Magic Hound",
-    # MuddyWater aliases
+    # MuddyWater
     "static kitten": "MuddyWater",
     "mercury": "MuddyWater",
     "earth vetala": "MuddyWater",
     "seedworm": "MuddyWater",
     "muddywater": "MuddyWater",
-    # OilRig aliases
+    "muddywater apt": "MuddyWater",
+    # OilRig
     "apt34": "OilRig",
     "helix kitten": "OilRig",
     "cobalt gypsy": "OilRig",
     "crambus": "OilRig",
     "oilrig": "OilRig",
-    # Kimsuky aliases
+    # Kimsuky
     "velvet chollima": "Kimsuky",
     "emerald sleet": "Kimsuky",
     "black banshee": "Kimsuky",
     "thallium": "Kimsuky",
-    # Volt Typhoon aliases
+    "kimsuky": "Kimsuky",
+    # Volt Typhoon
     "bronze silhouette": "Volt Typhoon",
     "vanguard panda": "Volt Typhoon",
     "insidious taurus": "Volt Typhoon",
-    # Turla aliases
+    # Salt Typhoon
+    "salt typhoon": "Salt Typhoon",
+    "ghost emperor": "Salt Typhoon",
+    "famousparrow": "Salt Typhoon",
+    # Turla
     "snake": "Turla",
     "uroburos": "Turla",
     "waterbug": "Turla",
     "iron hunter": "Turla",
-    # Transparent Tribe aliases
+    "turla": "Turla",
+    "secret blizzard": "Turla",
+    # Transparent Tribe
     "apt36": "Transparent Tribe",
     "transparent tribe": "Transparent Tribe",
     "mythic leopard": "Transparent Tribe",
     "copper fieldstone": "Transparent Tribe",
-    # Scattered Spider aliases
+    # Scattered Spider
     "octo tempest": "Scattered Spider",
     "roasted 0ktapus": "Scattered Spider",
     "unc3944": "Scattered Spider",
-    # Gamaredon Group aliases
+    "scattered spider": "Scattered Spider",
+    # ShinyHunters
+    "shinyhunters": "ShinyHunters",
+    "unc6240": "ShinyHunters",
+    "unc6661": "ShinyHunters",
+    "unc6671": "ShinyHunters",
+    # Gamaredon Group
     "gamaredon": "Gamaredon Group",
     "primitive bear": "Gamaredon Group",
     "actinium": "Gamaredon Group",
     "iron tilden": "Gamaredon Group",
-    # Play aliases
-    "play ransomware": "Play",
-    "playcrypt": "Play",
-    # UAT-9244 aliases
+    # Mustang Panda
+    "bronze president": "Mustang Panda",
+    "earth preta": "Mustang Panda",
+    "mustang panda": "Mustang Panda",
+    "stately taurus": "Mustang Panda",
+    "unc6384": "Mustang Panda",
+    # Leviathan / APT40
+    "ta423": "Leviathan",
+    "leviathan": "Leviathan",
+    "apt40": "Leviathan",
+    # HAFNIUM
+    "hafnium": "HAFNIUM",
+    "silk typhoon": "HAFNIUM",
+    # Sidewinder
+    "sidewinder": "Sidewinder",
+    "rattlesnake": "Sidewinder",
+    "razor tiger": "Sidewinder",
+    # APT42
+    "apt42": "APT42",
+    "calanque": "APT42",
+    # APT33
+    "apt33": "APT33",
+    "elfin": "APT33",
+    "refined kitten": "APT33",
+    "magnallium": "APT33",
+    # COLDRIVER / Star Blizzard
+    "coldriver": "Star Blizzard",
+    "star blizzard": "Star Blizzard",
+    "callisto": "Star Blizzard",
+    # DarkSide
+    "darkside": "DarkSide",
+    # Fox Kitten
+    "fox kitten": "Fox Kitten",
+    "pioneer kitten": "Fox Kitten",
+    # Handala Hack
+    "handala hack": "Handala Hack",
+    "handala": "Handala Hack",
+    "contagious interview": "Contagious Interview",
+    "lapsus$": "LAPSUS$",
+    "tropic trooper": "Tropic Trooper",
+    "lotus blossom": "Lotus Blossom",
+    "warlock ransomware group": "Warlock",
+    "warlock": "Warlock",
+    "dragonforce malaysia": "DragonForce",
+    "dragonforce": "DragonForce",
+    "silent lynx": "Silent Lynx",
+    "dragonclone": "DragonClone",
+    "ung0002": "UNG0002",
+    "bqtlock": "BQTLock",
+    # vendor/CERT named groups
+    "boggy serpens": "Boggy Serpens",
+    "dust specter": "Dust Specter",
+    "graycharlie": "GrayCharlie",
+    "purplebravo": "PurpleBravo",
+    "rublevka team": "Rublevka Team",
+    "stan ghouls": "Stan Ghouls",
+    "kongtuke": "KongTuke",
+    "udpgangster": "UDPGangster",
+    "amaranth-dragon": "Amaranth-Dragon",
+    "camelclone": "CamelClone",
+    "imperial kitten": "Imperial Kitten",
+    "tortoiseshell": "Tortoiseshell",
+    "agonizing serpens": "Agonizing Serpens",
+    "predatory sparrow": "Predatory Sparrow",
+    "hydra saiga": "Hydra Saiga",
+    "laundry bear": "Laundry Bear",
+    "cadet blizzard": "Cadet Blizzard",
+    "blind eagle": "Blind Eagle",
+    "el machete": "El Machete",
+    "bahamut": "Bahamut",
+    "worldleaks": "WorldLeaks",
+    "the gentlemen": "The Gentlemen",
+    # ransomware groups
+    "lockbit": "LockBit",
+    "alphv": "ALPHV",
+    "blackcat": "ALPHV",
+    "cl0p": "Cl0p",
+    "clop": "Cl0p",
+    "akira": "Akira",
+    "rhysida": "Rhysida",
+    "blackbyte": "BlackByte",
+    "blacksuit": "BlackSuit",
+    "royal ransomware": "Royal",
+    "hunters international": "Hunters International",
+    "medusa ransomware": "Medusa",
+    "medusa": "Medusa",
+    "interlock": "Interlock",
+    "beast ransomware": "Beast",
+    "beast": "Beast",
+    # Storm clusters
+    "storm-0501": "Storm-0501",
+    "storm-1811": "Storm-1811",
+    "storm-2561": "Storm-2561",
+    "storm-2603": "Storm-2603",
+    # UAT / UNC IDs
     "uat-9244": "UAT-9244",
+    "uat-8616": "UAT-8616",
 }
 
 # Known country of origin for MITRE threat actor groups
@@ -285,6 +498,10 @@ MITRE_ORIGINS = {
     "Cobalt Group": "Russia",
     "TA505": "Russia",
     "FIN7": "Russia",
+    "Laundry Bear": "Russia",
+    "Cadet Blizzard": "Russia",
+    "Stan Ghouls": "Russia",
+    "Hydra Saiga": "Russia",
     # China
     "APT1": "China",
     "APT3": "China",
@@ -346,6 +563,10 @@ MITRE_ORIGINS = {
     "TA459": "China",
     "Aoqin Dragon": "China",
     "UAT-9244": "China",
+    "Amaranth-Dragon": "China",
+    "CamelClone": "China",
+    "Dust Specter": "China",
+    "DragonClone": "China",
     # North Korea
     "APT37": "North Korea",
     "APT38": "North Korea",
@@ -378,6 +599,11 @@ MITRE_ORIGINS = {
     "Silent Librarian": "Iran",
     "DarkHydrus": "Iran",
     "WIRTE": "Iran",
+    "Handala Hack": "Iran",
+    "Imperial Kitten": "Iran",
+    "Tortoiseshell": "Iran",
+    "Agonizing Serpens": "Iran",
+    "Boggy Serpens": "Iran",
     # Pakistan
     "Transparent Tribe": "Pakistan",
     "Sidewinder": "Pakistan",
@@ -389,6 +615,7 @@ MITRE_ORIGINS = {
     "Patchwork": "India",
     "Confucius": "India",
     "BITTER": "India",
+    "Bahamut": "India",
     # Vietnam
     "APT32": "Vietnam",
     # Lebanon
@@ -408,6 +635,8 @@ MITRE_ORIGINS = {
     # South America
     "Machete": "Colombia",
     "Malteiro": "Brazil",
+    "Blind Eagle": "Colombia",
+    "El Machete": "Colombia",
     # United States
     "Equation": "United States",
     "Scattered Spider": "United States",
@@ -418,7 +647,11 @@ MITRE_ORIGINS = {
     "TeamTNT": "Germany",
     # South Korea
     "Darkhotel": "South Korea",
-    # Unknown — criminal or unattributed groups
+    # Israel
+    "Predatory Sparrow": "Israel",
+    # Central Asia
+    "Silent Lynx": "Central Asia",
+    # Unknown / criminal / unattributed
     "Play": "Unknown",
     "Akira": "Unknown",
     "BlackByte": "Unknown",
@@ -453,6 +686,33 @@ MITRE_ORIGINS = {
     "Windshift": "Unknown",
     "Inception": "Unknown",
     "UNC6353": "Unknown",
+    "UNG0002": "Unknown",
+    "DarkSide": "Unknown",
+    "LockBit": "Unknown",
+    "ALPHV": "Unknown",
+    "Cl0p": "Unknown",
+    "Rhysida": "Unknown",
+    "Medusa": "Unknown",
+    "BlackSuit": "Unknown",
+    "Royal": "Unknown",
+    "Hunters International": "Unknown",
+    "Interlock": "Unknown",
+    "Warlock": "Unknown",
+    "Beast": "Unknown",
+    "BQTLock": "Unknown",
+    "DragonForce": "Unknown",
+    "GrayCharlie": "Unknown",
+    "PurpleBravo": "Unknown",
+    "Rublevka Team": "Unknown",
+    "KongTuke": "Unknown",
+    "UDPGangster": "Unknown",
+    "WorldLeaks": "Unknown",
+    "The Gentlemen": "Unknown",
+    "ShinyHunters": "Unknown",
+    "UAT-8616": "Unknown",
+    "Storm-2561": "Unknown",
+    "Storm-2603": "Unknown",
 }
 
+# Lowercase version of MITRE_ORIGINS for NLP matching at extraction time
 ACTOR_ORIGINS = {k.lower(): v for k, v in MITRE_ORIGINS.items()}
