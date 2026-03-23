@@ -68,7 +68,7 @@ def show() -> None:
 
     where_clause = " AND ".join(where)
 
-    # Pull matching articles from Snowflake, newest first, capped at 500
+    # Pull matching articles from Snowflake, newest first
     df = sf_query(
         f"""
         SELECT TITLE, SOURCE, PUBLISHED_AT, RELEVANCE_SCORE,
@@ -76,7 +76,6 @@ def show() -> None:
         FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES
         WHERE {where_clause}
         ORDER BY PUBLISHED_AT DESC
-        LIMIT 500
     """
     )
 
