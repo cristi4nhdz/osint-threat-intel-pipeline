@@ -24,3 +24,4 @@ dependencies:
       - plotly 
       - pandas
       - pydeck
+      - feedparser
