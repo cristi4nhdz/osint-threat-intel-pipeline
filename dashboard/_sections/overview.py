@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timezone
 import plotly.graph_objects as go
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 import pandas as pd
 from dashboard.db import sf_query
 
@@ -80,6 +81,7 @@ def build_stat_rows(
 def show() -> None:
     """Render overview dashboard."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    st_autorefresh(interval=5000, key="ioc_auto_refresh")
 
     # Header
     st.markdown(
