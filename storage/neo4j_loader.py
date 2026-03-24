@@ -6,7 +6,7 @@ import logging
 from neo4j import GraphDatabase
 from kafka import KafkaConsumer
 from config.config_loader import load_config
-from processing.actor_data import ACTOR_NORMALIZE, MITRE_ORIGINS
+from processing.actor_data import ACTOR_NORMALIZE, MITRE_ORIGINS, ACTOR_ORIGINS
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +148,15 @@ def create_article_graph(tx, article: dict) -> None:
                 country=known,
             )
 
+    # any actor with no known origin gets connected to Unknown
+    for actor in actors:
+        known = ACTOR_ORIGINS.get(actor.lower())
+        if not known:
+            tx.run("""
+                MERGE (a:ThreatActor {name: $actor})
+                MERGE (c:Country {name: 'Unknown'})
+                MERGE (a)-[:ORIGINATES_FROM]->(c)
+            """, actor=actor)
 
 class Neo4jLoader:
     """Consumes enriched articles and MITRE data from Kafka and writes them to Neo4j."""
@@ -232,6 +241,10 @@ class Neo4jLoader:
                     display_name=display_name,
                     country=country,
                 )
+
+        # ensure Unknown node exists for unattributed actors
+        with self.driver.session() as session:
+            session.run("MERGE (c:Country {name: 'Unknown'})")
 
         logger.info("Loaded %d MITRE groups into Neo4j.", count)
 

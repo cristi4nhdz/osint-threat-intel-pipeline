@@ -2,50 +2,273 @@
 threat_actor_hints:
   # named actors
   - lazarus
+  - lazarus group
   - cozy bear
   - fancy bear
   - silver dragon
   - sandworm
   - charming kitten
-  - hafnium
-  - darkside
-  - unsolicitedbooker
   - scattered spider
   - volt typhoon
   - salt typhoon
+  - muddywater
+  - oilrig
+  - kimsuky
+  - magic hound
+  - turla
+  - gamaredon
+  - transparent tribe
+  - ember bear
+  - star blizzard
+  - lapsus$
+  - fin7
+  - fin8
+  - wizard spider
+  - carbanak
+  - mustang panda
+  - hafnium
+  - darkside
+  - winnti
+  - leviathan
+  - naikon
+  - patchwork
+  - sidewinder
+  - sidecopy
+  - molerats
+  - sea turtle
+  - polonium
+  - andariel
+  - darkhotel
+  - bitter
+  - donot team
+  - confucius
+  - stealth falcon
+  - fox kitten
+  - silent librarian
+  - moses staff
+  - agrius
+  - ferocious kitten
+  - indrik spider
+  - cobalt group
+  - contagious interview
+  - moonstone sleet
+  - daggerfly
+  - aquatic panda
+  - earth lusca
+  - blacktech
+  - toddycat
+  - deep panda
+  - lotus blossom
+  - tropic trooper
+  - ke3chang
+  - tonto team
+  - backdoordiplomacy
+  - dragonfly
+  - volatile cedar
+  - dark caracal
+  - copykittens
+  - cleaver
+  - cyberav3ngers
+  - redcurl
+  - silverteller
+  - evilnum
+  - winter vivern
+  - exotic lily
+  - machete
+  - scarcruft
+  - apt-c-28
+  # --- vendor/CERT named groups not in MITRE ---
+  - boggy serpens
+  - dust specter
+  - graycharlie
+  - purplebravo
+  - rublevka team
+  - handala hack
+  - handala
+  - stan ghouls
+  - kongtuke
+  - udpgangster
+  - amaranth-dragon
+  - camelclone
+  - imperial kitten
+  - tortoiseshell
+  - agonizing serpens
+  - predatory sparrow
+  - hydra saiga
+  - laundry bear
+  - cadet blizzard
+  - secret blizzard
+  - seashell blizzard
+  - storm-0501
+  - storm-1811
+  - storm-2561
+  - storm-2603
+  - blind eagle
+  - el machete
+  - bahamut
+  - worldleaks
+  - sednit
+  - coldriver
+  - shinyhunters
+  - silent lynx
+  - dragonclone
+  - ung0002
+  # --- ransomware groups ---
+  - lockbit
+  - alphv
+  - blackcat
+  - cl0p
+  - akira
+  - rhysida
+  - play ransomware
+  - blackbyte
+  - blacksuit
+  - royal ransomware
+  - hunters international
+  - medusa ransomware
+  - interlock
+  - warlock
+  - beast ransomware
+  - dragonforce
+  - the gentlemen
+  - bqtlock
 
 malware_hints:
-  # generic
-  - ransomware
-  - malware
-  - spyware
-  - trojan
-  - backdoor
-  - rootkit
-  - botnet
-  - worm
-  - keylogger
-  - infostealer
-  - dropper
-  - loader
-  # tools
+  # C2 frameworks
   - cobalt strike
-  - mimikatz
-  - metasploit
-  - exploit kit
   - brute ratel
   - sliver
   - havoc
-  # named malware
-  - coruna
-  - cryptolocker
+  - metasploit
+  - mimikatz
+  - nighthawk
+  - mythic
+  # ransomware families (as malware, not actors)
+  - lockbit ransomware
+  - conti
+  - ryuk
+  - sodinokibi
+  - revil
+  - maze
+  - blackmatter
+  - bqtlock
+  # RATs and backdoors
+  - plugx
+  - shadowpad
+  - asyncrat
+  - njrat
+  - remcos
+  - darkcomet
+  - quasar rat
+  - agent tesla
+  - xworm
+  - venomrat
+  - gh0st rat
+  - spynote
   - voidlink
-  - canfail
+  - a0backdoor
+  - castlerat
+  - miradorshell
+  - silentconnect
+  - snappyclient
+  - chrysalis
   - dohdoor
+  - dynowiper
+  - toxicsnake
+  - coolclient
+  - kadnap
+  - canfail
   - marssnake
   - lucidoor
   - renengine
   - cyberstrikeai
+  - horabot
+  - beatbanker
+  - prometei
+  - castleloader
+  - drillapp
+  - vshell
+  - sparkrat
+  - mimicrat
+  - encystphp
+  - crashfix
+  - glassworm
+  - promptspy
+  - microstealer
+  - gopix
+  - keenadu
+  - arkanix stealer
+  - netsupp rat
+  - winos 4.0
+  - winos
+  - speagle
+  - perseus
+  - darksword
+  - covert rat
+  - applechris
+  - memfun
+  - airsnitch
+  - rondodox
+  - metro4shell
+  - polyshell
+  - vip_keylogger
+  - vip keylogger
+  - trustconnect
+  - gsocket
+  - ninja browser
+  - redalert
+  - triton
+  - installfix
+  # stealers
+  - redline
+  - vidar
+  - raccoon stealer
+  - lumma stealer
+  - lumma
+  - stealc
+  - acrstealer
+  - voidstealer
+  - shub stealer
+  - purelog stealer
+  - purelog
+  - coruna
+  - rhadamanthys
+  - aurora stealer
+  - mystic stealer
+  - meduza stealer
+  - ducktail
+  - nodestealer
+  # exploit kits and tools
+  - exploit kit
+  - eternalblue
+  - log4shell
+  - proxylogon
+  - proxyshell
+  - zerologon
+  - follina
+  - spring4shell
+  - starkiller
+  - react2shell
+  # botnets and wipers
+  - mirai
+  - emotet
+  - trickbot
+  - qakbot
+  - icedid
+  - bumblebee
+  - dridex
+  - hermetic wiper
+  - whispergate
+  - caddywiper
+  - kimwolf
+  - canisterworm
+  - latrodectus
+  # mobile
+  - pegasus
+  - predator spyware
+  - sharkbot
+  - godfather android
+  - flubot
 
 attack_hints:
   - phishing
@@ -65,6 +288,26 @@ attack_hints:
   - remote code execution
   - rce
   - sql injection
+  - clickfix
+  - living off the land
+  - lolbins
+  - pass the hash
+  - kerberoasting
+  - golden ticket
+  - oauth abuse
+  - device code phishing
+  - malvertising
+  - seo poisoning
+  - dll sideloading
+  - process injection
+  - adversary in the middle
+  - aitm
+  - business email compromise
+  - watering hole
+  - typosquatting
+  - supply chain attack
+  - byovd
+  - edr killer
 
 high_signal_terms:
   - data breach
@@ -82,15 +325,39 @@ high_signal_terms:
   - critical infrastructure
   - vulnerability
   - malware
+  - ransomware
+  - spyware
+  - backdoor
+  - trojan
+  - rootkit
+  - botnet
+  - infostealer
   - phishing
   - hacking
   - hacker
   - cyberattack
   - cybersecurity
   - exploit
-  - spyware
-  - backdoor
   - leaked
   - exposed
   - records exposed
   - personal data
+  - supply chain attack
+  - advanced persistent threat
+  - apt
+  - threat actor
+  - indicators of compromise
+  - ioc
+  - command and control
+  - lateral movement
+  - data exfiltration
+  - remote code execution
+  - initial access broker
+  - double extortion
+  - critical vulnerability
+  - proof of concept
+  - in the wild
+  - mass exploitation
+  - ics
+  - scada
+  - operational technology

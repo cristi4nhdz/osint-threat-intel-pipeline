@@ -24,3 +24,5 @@ dependencies:
       - plotly 
       - pandas
       - pydeck
+      - feedparser
+      - streamlit-autorefresh

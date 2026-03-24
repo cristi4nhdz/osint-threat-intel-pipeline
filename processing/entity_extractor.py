@@ -22,6 +22,9 @@ THREAT_ACTOR_PATTERN = re.compile(
     r"\b(apt\d+|unc\d+|uat[-\s]?\d+|uac[-\s]?\d+|ta\d+|g\d{4})\b", re.IGNORECASE
 )
 
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+HTML_ENTITY_RE = re.compile(r"&#?\w+;")
+
 KEYWORDS_PATH = Path(__file__).parent / "keywords.yaml"
 
 try:
@@ -38,35 +41,61 @@ except (FileNotFoundError, KeyError) as e:
     raise RuntimeError(f"Failed to load keywords.yaml: {e}") from e
 
 ORIGIN_PATTERNS = re.compile(
-    r"\b(chinese|russian|iranian|north korean|pakistani|indian|vietnamese|"
-    r"israeli|lebanese|belarusian|turkish|from|based in|linked to|"
-    r"attributed to|nexus|sponsored by|state.sponsored|nation.state)\b",
+    r"\b("
+    r"chinese|russian|iranian|north korean|pakistani|indian|vietnamese|"
+    r"israeli|lebanese|belarusian|turkish|south korean|american|british|"
+    r"from|based in|linked to|attributed to|nexus|sponsored by|state[-\s]?sponsored|nation[-\s]?state|"
+    r"foreign|domestic|national|transnational"
+    r")\b",
     re.IGNORECASE,
 )
 
 TARGET_PATTERNS = re.compile(
-    r"\b(target|attack|breach|compromise|espionage|intrusion|hack|exploit|"
-    r"against|victim|infected|hit|struck|impacted|affected|campaign against)\b",
+    r"\b("
+    r"target|attack|breach|compromise|espionage|intrusion|hack|exploit|"
+    r"against|victim|infected|hit|struck|impacted|affected|campaign against|"
+    r"data exfiltration|credential theft|denial of service|ransomware attack|"
+    r"security incident|penetration|unauthorized access|system compromise"
+    r")\b",
     re.IGNORECASE,
 )
 
 
+def _strip_html(text: str) -> str:
+    """Remove HTML tags and entities from text."""
+    text = HTML_TAG_RE.sub(" ", text)
+    text = HTML_ENTITY_RE.sub(" ", text)
+    return text
+
+
+def _clean_name(name: str) -> str:
+    """Strip trailing punctuation, HTML fragments, newlines, and whitespace."""
+    name = HTML_TAG_RE.sub("", name)
+    name = HTML_ENTITY_RE.sub("", name)
+    name = name.replace("\n", " ").replace("\r", " ")
+    name = re.sub(r"\s+", " ", name)
+    return name.strip().rstrip("'\".,;:!?)(}{[]<>/")
+
+
 def normalize_actor(name: str) -> str:
     """Normalize threat actor names using ACTOR_NORMALIZE mapping."""
-
-    return ACTOR_NORMALIZE.get(name.lower().strip(), name.strip())
+    cleaned = _clean_name(name)
+    return ACTOR_NORMALIZE.get(cleaned.lower().strip(), cleaned)
 
 
 def normalize_location(loc: str) -> str | None:
     """Normalize location names using LOCATION_NORMALIZE, or skip if blocklisted."""
-
-    stripped = loc.strip()
-    lower = stripped.lower()
+    cleaned = _clean_name(loc)
+    lower = cleaned.lower()
 
     if lower in LOCATION_BLOCKLIST:
         return None
 
-    return LOCATION_NORMALIZE.get(lower, stripped)
+    # skip if still contains HTML fragments after cleaning
+    if "<" in cleaned or ">" in cleaned or "&" in cleaned:
+        return None
+
+    return LOCATION_NORMALIZE.get(lower, cleaned)
 
 
 def classify_locations(doc) -> tuple[list[str], list[str]]:
@@ -144,7 +173,10 @@ class EntityExtractor:
     def extract(self, article: dict) -> dict:
         """Extract entities from an article and return a structured result dict."""
 
-        text = f"{article.get('title', '')} {article.get('content', '')}"
+        raw_text = f"{article.get('title', '')} {article.get('content', '')}"
+
+        text = _strip_html(raw_text)
+
         doc = self.nlp(text[:5000])
 
         orgs = [
@@ -160,10 +192,13 @@ class EntityExtractor:
 
         raw_actors = match_keywords(text_lower, THREAT_ACTOR_HINTS, orgs) + actor_ids
 
+        raw_actors = [_clean_name(a) for a in raw_actors]
+
         threat_actors = [
             a
             for a in list(dict.fromkeys(normalize_actor(a) for a in raw_actors))
             if a.lower().strip() not in ACTOR_BLOCKLIST
+            and len(a) <= 40  # reject parsing artifacts longer than 40 chars
         ]
 
         origin_locs, target_locs = classify_locations(doc)

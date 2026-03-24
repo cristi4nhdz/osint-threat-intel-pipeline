@@ -7,7 +7,14 @@ import streamlit as st
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from dashboard._sections import overview, threat_map, actor_graph, actor_intel, raw_data
+from dashboard._sections import (
+    overview,
+    threat_map,
+    actor_graph,
+    actor_intel,
+    raw_data,
+    ioc_explorer,
+)
 
 st.set_page_config(
     page_title="OBSRV",
@@ -320,6 +327,15 @@ def get_pipeline_status() -> dict:
     except Exception:
         status["freshness"] = ("err", "unknown")
 
+    # IOC count
+    try:
+        from dashboard.db import sf_query
+
+        r = sf_query("SELECT COUNT(*) as n FROM THREAT_INTEL.PUBLIC.THREAT_IOCS")
+        status["iocs"] = ("ok", f"{int(r['N'][0]):,}")
+    except Exception:
+        status["iocs"] = ("err", "unknown")
+
     return status
 
 
@@ -329,6 +345,7 @@ PAGES = {
     "◈  Actor Graph": actor_graph,
     "🎯  Actor Intelligence": actor_intel,
     "🗄  Raw Data": raw_data,
+    "🧬 IOC Explorer": ioc_explorer,
 }
 
 with st.sidebar:
@@ -375,6 +392,7 @@ with st.sidebar:
         "neo4j": "Neo4j",
         "kafka": "Kafka",
         "freshness": "Freshness",
+        "iocs": "IOCs",
     }
 
     # Build status rows as inline HTML with colored indicator dots

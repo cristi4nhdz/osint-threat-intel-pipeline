@@ -1,10 +1,10 @@
-# ingestion/run_otx.py
-"""Runs the AlienVault OTX ingestion pipeline."""
+# ingestion/run_rss.py
+"""Runs the RSS feed ingestion pipeline."""
 
 import time
 import logging
 from config.config_loader import load_config
-from ingestion.otx_producer import OTXProducer
+from ingestion.rss_producer import RSSProducer
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,22 +18,22 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    """Fetch and publish AlienVault OTX pulses to Kafka in intervals."""
-    logger.info("Starting OTX ingestion pipeline")
+    """Fetch and publish RSS feed articles to Kafka in intervals."""
+    logger.info("Starting RSS feed ingestion pipeline")
     config = load_config()
     poll_interval = config["news"]["poll_interval_seconds"]
     producer = None
 
     try:
         try:
-            producer = OTXProducer()
+            producer = RSSProducer()
         except Exception as e:
-            logger.error("Failed to initialize OTXProducer: %s", e)
+            logger.error("Failed to initialize RSSProducer: %s", e)
             raise
         while True:
-            count = producer.fetch_and_publish(max_pulses=1000)
+            count = producer.fetch_and_publish(max_per_feed=20)
             logger.info(
-                "Published %d pulses, sleeping %ds",
+                "Published %d articles, sleeping %ds",
                 count,
                 poll_interval,
             )
@@ -41,7 +41,7 @@ def main() -> None:
     except KeyboardInterrupt:
         logger.info("Shutting down")
     except Exception as e:
-        logger.error("Pipeline failed : %s", e)
+        logger.error("Pipeline failed: %s", e)
         raise
     finally:
         if producer:
