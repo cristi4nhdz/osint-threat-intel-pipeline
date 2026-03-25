@@ -7,6 +7,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     depends_on: [zookeeper]
+    restart: on-failure
     ports:
       - "9092:9092"
     environment:
@@ -25,3 +26,19 @@ services:
       - "7687:7687"
     environment:
       NEO4J_AUTH: neo4j/password
+
+  prefect-server:
+    image: prefecthq/prefect:3-latest
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+    environment:
+      PREFECT_UI_API_URL: http://localhost:4200/api
+
+  flows:
+    build: .
+    command: python -m flows.deploy_flows
+    restart: on-failure
+    depends_on: [prefect-server]
+    environment:
+      PREFECT_API_URL: http://prefect-server:4200/api

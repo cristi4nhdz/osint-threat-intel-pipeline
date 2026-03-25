@@ -16,3 +16,5 @@ dashboard/__pycache__
 dashboard/.mypy_cache
 dashboard/_sections/__pycache__
 dashboard/_sections/.mypy_cache
+flows/__pycache__
+flows/.mypy_cache
