@@ -1,7 +1,4 @@
 ---
-news:
-  poll_interval_seconds: 300
-  
 kafka:
   bootstrap_servers: localhost:9092
   topics:
