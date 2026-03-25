@@ -59,21 +59,30 @@ class SnowflakeLoader:
         self.cur = self.conn.cursor()
         logger.info("Snowflake connection ready.")
 
-    def run(self) -> None:
+    def run(self) -> int:
         """Consume messages and insert articles."""
 
         logger.info("Listening on %s", self.input_topic)
-        for message in self.consumer:
-            article = message.value
-            try:
-                self.insert_article(article)
-            except Exception as e:
-                logger.error("Failed to insert: %s", e)
-                continue
+        count = 0
+
+        while True:
+            records = self.consumer.poll(timeout_ms=20000)
+            if not records:
+                break
+            for tp, messages in records.items():
+                for message in messages:
+                    article = message.value
+                    try:
+                        self.insert_article(article)
+                        count += 1
+                    except Exception as e:
+                        logger.error("Failed to insert: %s", e)
+                        continue
+        logger.info("Loaded %d articles to Snowflake", count)
+        return count
 
     def insert_article(self, article: dict) -> None:
         """Insert enriched article into Snowflake with URL deduplication."""
-
         title = article.get("title", "")
         url = article.get("original_url", "")
 
@@ -116,3 +125,10 @@ class SnowflakeLoader:
             logger.info("Inserted: %s", title[:60])
         else:
             logger.info("Duplicate skipped: %s", title[:60])
+
+    def close(self) -> None:
+        """Close Kafka consumer and Snowflake connection."""
+        self.consumer.close()
+        self.cur.close()
+        self.conn.close()
+        logger.info("Snowflake loader closed.")

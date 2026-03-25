@@ -66,38 +66,38 @@ class EnrichmentConsumer:
         """Flush all pending messages to Kafka."""
         self.producer.flush()
 
-    def run(self) -> None:
+    def run(self) -> int:
         """Listens for articles in Kafka, enriches them, and sends them to output topic"""
         logger.info("Listening on %s", self.input_topic)
         count = 0
 
-        try:
-            for message in self.consumer:
-                article: dict = message.value
-                try:
-                    enriched: dict = self.extractor.extract(article)
+        while True:
+            records = self.consumer.poll(timeout_ms=20000)
+            if not records:
+                break
+            for tp, messages in records.items():
+                for message in messages:
+                    article: dict = message.value
+                    try:
+                        enriched: dict = self.extractor.extract(article)
 
-                    if enriched["relevance_score"] < self.min_relevance_score:
-                        logger.info(
-                            "Skipped (low relevance %s): %s",
-                            enriched["relevance_score"],
-                            enriched["title"],
-                        )
+                        if enriched["relevance_score"] < self.min_relevance_score:
+                            logger.info(
+                                "Skipped (low relevance %s): %s",
+                                enriched["relevance_score"],
+                                enriched["title"],
+                            )
+                            continue
+
+                        self.publish(enriched, key=enriched["original_url"])
+                        self.flush()
+                        count += 1
+
+                    except Exception as e:
+                        logger.error("Failed to process article: %s", e)
                         continue
-
-                    self.publish(enriched, key=enriched["original_url"])
-                    self.flush()
-                    count += 1
-
-                except Exception as e:
-                    logger.error("Failed to process article: %s", e)
-                    continue
-        except KeyboardInterrupt:
-            logger.info("Published %d articles", count)
-            logger.info("Shutting down")
-        except Exception as e:
-            logger.info("Published %d articles", count)
-            raise
+        logger.info("Published %d articles", count)
+        return count
 
     def close(self) -> None:
         """Close the Kafka consumer and producer."""
