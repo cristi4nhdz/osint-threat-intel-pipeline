@@ -41,6 +41,8 @@ class SnowflakeLoader:
             auto_offset_reset="earliest",
             enable_auto_commit=True,
             group_id="snowflake-loader-group",
+            max_poll_interval_ms=600000,
+            max_poll_records=50,
         )
         logger.info("Kafka consumer ready.")
 
@@ -60,25 +62,45 @@ class SnowflakeLoader:
         logger.info("Snowflake connection ready.")
 
     def run(self) -> int:
-        """Consume messages and insert articles."""
-
+        """Consume messages from Kafka and insert articles into Snowflake in batches."""
         logger.info("Listening on %s", self.input_topic)
         count = 0
+        batch: list[dict] = []
+        batch_size = 50
 
         while True:
-            records = self.consumer.poll(timeout_ms=20000)
+            records = self.consumer.poll(timeout_ms=600000)
             if not records:
+                if batch:
+                    count += self.write_snowflake_batch(batch)
+                    batch = []
                 break
             for tp, messages in records.items():
                 for message in messages:
-                    article = message.value
-                    try:
-                        self.insert_article(article)
-                        count += 1
-                    except Exception as e:
-                        logger.error("Failed to insert: %s", e)
-                        continue
+                    batch.append(message.value)
+                    if len(batch) >= batch_size:
+                        count += self.write_snowflake_batch(batch)
+                        logger.info("Batch complete, %d total articles loaded", count)
+                        batch = []
+
+        if batch:
+            count += self.write_snowflake_batch(batch)
+            logger.info("Final batch loaded, total %d articles", count)
+
         logger.info("Loaded %d articles to Snowflake", count)
+        return count
+
+    def write_snowflake_batch(self, batch: list[dict]) -> int:
+        """Insert a batch of enriched articles into Snowflake."""
+        count = 0
+        for article in batch:
+            try:
+                self.insert_article(article)
+                count += 1
+            except Exception as e:
+                logger.error(
+                    "Failed to insert article %s: %s", article.get("title", "")[:60], e
+                )
         return count
 
     def insert_article(self, article: dict) -> None:
