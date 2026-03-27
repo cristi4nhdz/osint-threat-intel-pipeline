@@ -1,6 +1,6 @@
 ---
 kafka:
-  bootstrap_servers: localhost:9092
+  bootstrap_servers: kafka:29092
   topics:
     news: osint.news
     mitre: osint.mitre
@@ -17,7 +17,7 @@ snowflake:
   warehouse: "YOUR_SNOWFLAKE_WAREHOUSE_HERE"
 
 neo4j:
-  uri: bolt://localhost:7687
+  uri: bolt://neo4j:7687
   user: neo4j
   password: password
 

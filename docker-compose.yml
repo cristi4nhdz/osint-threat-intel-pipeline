@@ -26,19 +26,55 @@ services:
       - "7687:7687"
     environment:
       NEO4J_AUTH: neo4j/password
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password", "RETURN 1;"]
+      interval: 5s
+      retries: 10
+      start_period: 5s
 
   prefect-server:
     image: prefecthq/prefect:3-latest
     command: prefect server start --host 0.0.0.0
     ports:
       - "4200:4200"
-    environment:
-      PREFECT_UI_API_URL: http://localhost:4200/api
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4200/api/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   flows:
     build: .
-    command: python -m flows.deploy_flows
     restart: on-failure
-    depends_on: [prefect-server]
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      neo4j:
+        condition: service_healthy
     environment:
       PREFECT_API_URL: http://prefect-server:4200/api
+      NEO4J_URI: bolt://neo4j:7687
+      KAFKA_BOOTSTRAP: kafka:29092
+    volumes:
+      - ./logs:/app/logs
+    command: conda run -n osint python -m flows.deploy_flows
+
+  dashboard:
+    build: .
+    restart: on-failure
+    depends_on:
+      flows:
+        condition: service_started
+      kafka:
+        condition: service_started
+      neo4j:
+        condition: service_healthy
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      KAFKA_BOOTSTRAP: kafka:29092
+    ports:
+      - "8501:8501"
+    command: conda run -n osint streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0

@@ -36,6 +36,7 @@ Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, RSS feeds, Ab
 | Graph | Neo4j |
 | Dashboard | Streamlit, Plotly, D3.js |
 | Orchestration | Prefect, Docker Compose |
+| Testing | pytest, pytest-cov |
 | Environment | Conda |
 | Linting | flake8, pylint, black, mypy, yamllint |
 
@@ -46,16 +47,17 @@ Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, RSS feeds, Ab
 - **5-Source Ingestion** — NewsAPI, AlienVault OTX, RSS feeds, Abuse.ch, and MITRE ATT&CK all publishing to Kafka
 - **NLP Enrichment** — Entity extraction and threat signal classification using spaCy's `en_core_web_trf` transformer model, with keyword-based matching across 200+ threat actors and 100+ malware families
 - **Relevance Scoring** — Articles scored 0.0–1.0 and filtered before publishing to the enriched topic
-- **Snowflake Storage** — Enriched articles loaded into Snowflake with URL deduplication
+- **Snowflake Storage** — Enriched articles loaded into Snowflake with automatic table setup and URL deduplication
 - **IOC Storage** — Indicators of compromise loaded from Kafka into Snowflake every 6 hours
 - **Neo4j Graph** — Actor relationship graph linking 200+ threat actors to malware, locations, and origin countries, refreshed every 6 hours via Prefect
-- **6-Page Streamlit Dashboard** — Overview metrics, geo threat map, interactive D3 actor graph, MITRE ATT&CK actor intelligence, IOC explorer, and raw data explorer with CSV export
+- **6-Page Streamlit Dashboard** — Overview metrics, geo threat map, interactive D3 actor graph, MITRE ATT&CK actor intelligence, IOC explorer, and raw data explorer with CSV export, served via Docker
 - **IOC Explorer** — Search and filter IOCs by type, actor, and malware family with article cross-referencing and source breakdown
 - **Live Pipeline Status** — Sidebar indicators for Snowflake, Neo4j, Kafka, and data freshness
 - **Prefect Orchestration** — 3 scheduled flows running in Docker: ingestion every 24 hours, enrichment and storage loading every 6 hours, IOC loading every 6 hours
-- **Kafka-Backed Event Bus** — Uses 4 Kafka topics with decoupled producers and consumers to improve reliability and enable message replay.
+- **Kafka-Backed Event Bus** — Uses 4 Kafka topics with decoupled producers and consumers to improve reliability and enable message replay
+- **Test Suite** — pytest tests covering entity extraction, producers, consumers, and loaders with mocked Kafka, Snowflake, and Neo4j connections
 - **Config-Driven** — YAML-based configuration for sources, topics, and pipeline behavior
-- **Containerized** — Full Docker Compose setup for Kafka, Neo4j, Prefect server, and flow runner
+- **Containerized** — Full Docker Compose setup for Kafka, Neo4j, Prefect server, flow runner, and dashboard
 
 ---
 
@@ -85,15 +87,7 @@ conda env create -f environment.yaml
 conda activate osint
 ```
 
-**3. Download the spaCy transformer model:**
-
-```bash
-python -m spacy download en_core_web_trf
-```
-
-**4. Configure your environment:**
-
-Copy or edit the settings file with your API keys and topic preferences:
+**3. Configure your environment:**
 
 ```bash
 cp config/settings.example.yaml config/settings.yaml
@@ -102,28 +96,22 @@ cp config/settings.example.yaml config/settings.yaml
 
 ### Running the Pipeline
 
-**Run the Snowflake setup:**
-
-```bash
-python -m storage.snowflake_setup
-```
-
-**Start the infrastructure:**
+**Start the full pipeline:**
 
 ```bash
 docker compose up
 ```
 
-This starts Kafka, Neo4j, the Prefect server at `http://localhost:4200`, and automatically deploys and runs all 3 scheduled flows:
+This starts Kafka, Neo4j, the Prefect server at `http://localhost:4200`, the Streamlit dashboard at `http://localhost:8501`, and automatically deploys and runs all 3 scheduled flows:
 
 - `osint-ingestion-flow` — runs all 5 ingestion producers every 24 hours
 - `enrichment-loader-flow` — runs NLP enrichment, Snowflake loader, and Neo4j graph builder every 6 hours
 - `ioc-loader-flow` — loads new IOCs into Snowflake every 6 hours
 
-**Run the dashboard:**
+**Run tests:**
 
 ```bash
-streamlit run dashboard/app.py
+pytest
 ```
 
 **Shut down:**
@@ -145,7 +133,9 @@ osint-threat-intel-pipeline/
 |-- ingestion/            # News, OTX, RSS, Abuse.ch, and MITRE ATT&CK producers
 |-- processing/           # NLP enrichment, entity extraction, Kafka consumer
 |-- storage/              # Snowflake, IOC, and Neo4j loaders
+|-- tests/                # pytest test suite for ingestion, processing, and storage
 |-- docker-compose.yml    # Container orchestration
+|-- Dockerfile            # Container image definition
 |-- environment.yaml      # Conda environment spec
 |-- README.md
 ```

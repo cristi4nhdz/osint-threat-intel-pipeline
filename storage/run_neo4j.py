@@ -2,13 +2,16 @@
 """Runs the Neo4j graph-build pipeline."""
 
 import logging
+import os
 from storage.neo4j_loader import Neo4jLoader
+
+os.makedirs("/app/logs", exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s — %(message)s",
     handlers=[
-        logging.FileHandler(r"storage\logs\storage_logs.log"),
+        logging.FileHandler("/app/logs/storage.log"),
         logging.StreamHandler(),
     ],
 )

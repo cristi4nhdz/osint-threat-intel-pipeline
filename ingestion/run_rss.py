@@ -2,13 +2,16 @@
 """Runs the RSS feed ingestion pipeline."""
 
 import logging
+import os
 from ingestion.rss_producer import RSSProducer
+
+os.makedirs("/app/logs", exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s — %(message)s",
     handlers=[
-        logging.FileHandler(r"ingestion\logs\ingestion_logs.log"),
+        logging.FileHandler("/app/logs/ingestion.log"),
         logging.StreamHandler(),
     ],
 )
@@ -18,7 +21,6 @@ logger = logging.getLogger(__name__)
 def main() -> None:
     """Fetch and publish RSS feed articles to Kafka."""
     logger.info("Starting RSS feed ingestion pipeline")
-
     producer = None
 
     try:

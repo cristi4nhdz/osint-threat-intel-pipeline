@@ -7,10 +7,7 @@ logs.log
 processing/__pycache__
 ingestion/.mypy_cache
 processing/.mypy_cache
-ingestion/logs/ingestion_logs.log
-processing/logs/processing_logs.log
 storage/__pycache__
-storage/logs/storage_logs.log
 storage/.mypy_cache
 dashboard/__pycache__
 dashboard/.mypy_cache
@@ -18,3 +15,10 @@ dashboard/_sections/__pycache__
 dashboard/_sections/.mypy_cache
 flows/__pycache__
 flows/.mypy_cache
+tests/__pycache__
+tests/.coverage
+tests/htmlcov
+tests/.pytest_cache
+tests/.mypy_cache
+logs/*.log
+.coverage

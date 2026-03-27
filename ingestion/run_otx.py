@@ -2,13 +2,16 @@
 """Runs the AlienVault OTX ingestion pipeline."""
 
 import logging
+import os
 from ingestion.otx_producer import OTXProducer
+
+os.makedirs("/app/logs", exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s — %(message)s",
     handlers=[
-        logging.FileHandler(r"ingestion\logs\ingestion_logs.log"),
+        logging.FileHandler("/app/logs/ingestion.log"),
         logging.StreamHandler(),
     ],
 )

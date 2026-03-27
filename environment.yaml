@@ -27,3 +27,7 @@ dependencies:
       - feedparser
       - streamlit-autorefresh
       - prefect
+      - pytest
+      - pytest-cov
+      - pytest-mock 
+      - faker

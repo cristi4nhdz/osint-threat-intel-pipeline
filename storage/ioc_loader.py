@@ -185,7 +185,7 @@ class IOCLoader:
             enable_auto_commit=True,
             group_id="ioc-loader-group",
             max_poll_interval_ms=600000,
-            max_poll_records=500,
+            max_poll_records=100,
         )
 
         logger.info("IOC loader ready.")
@@ -204,10 +204,10 @@ class IOCLoader:
         sf_count = 0
         neo_count = 0
         batch: list[dict] = []
-        batch_size = 500
+        batch_size = 100
 
         while True:
-            records = self.consumer.poll(timeout_ms=10000)
+            records = self.consumer.poll(timeout_ms=600000)
             if not records:
                 if batch:
                     sf_count += self.write_snowflake_batch(batch)
@@ -226,7 +226,7 @@ class IOCLoader:
                         sf_count += self.write_snowflake_batch(batch)
                         neo_count += self.write_neo4j_batch(batch)
                         logger.info(
-                            "Batch complete — %d SF, %d Neo4j total",
+                            "Batch complete, %d SF, %d Neo4j total",
                             sf_count,
                             neo_count,
                         )

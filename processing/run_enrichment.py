@@ -2,13 +2,16 @@
 """Runs the enrichment processing pipeline"""
 
 import logging
+import os
 from processing.enrichment_consumer import EnrichmentConsumer
+
+os.makedirs("/app/logs", exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s — %(message)s",
     handlers=[
-        logging.FileHandler(r"processing\logs\processing_logs.log"),
+        logging.FileHandler("/app/logs/processing.log"),
         logging.StreamHandler(),
     ],
 )
