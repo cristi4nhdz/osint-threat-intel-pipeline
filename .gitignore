@@ -19,4 +19,6 @@ tests/__pycache__
 tests/.coverage
 tests/htmlcov
 tests/.pytest_cache
+tests/.mypy_cache
 logs/*.log
+.coverage
