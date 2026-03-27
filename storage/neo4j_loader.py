@@ -152,11 +152,15 @@ def create_article_graph(tx, article: dict) -> None:
     for actor in actors:
         known = ACTOR_ORIGINS.get(actor.lower())
         if not known:
-            tx.run("""
+            tx.run(
+                """
                 MERGE (a:ThreatActor {name: $actor})
                 MERGE (c:Country {name: 'Unknown'})
                 MERGE (a)-[:ORIGINATES_FROM]->(c)
-            """, actor=actor)
+            """,
+                actor=actor,
+            )
+
 
 class Neo4jLoader:
     """Consumes enriched articles and MITRE data from Kafka and writes them to Neo4j."""

@@ -61,6 +61,8 @@ class MitreProducer(BaseProducer):
             try:
                 self.publish(self.topic, message, key=message["mitre_id"])
             except Exception as e:
-                logger.error("Failed to publish MITRE group %s: %s", message["mitre_id"], e)
+                logger.error(
+                    "Failed to publish MITRE group %s: %s", message["mitre_id"], e
+                )
 
         return len(groups)
