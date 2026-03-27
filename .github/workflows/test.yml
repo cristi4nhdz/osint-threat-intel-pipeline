@@ -22,6 +22,11 @@ jobs:
         environment-file: environment.yaml
         activate-environment: osint
     
+    - name: Setup config file
+      shell: bash -l {0}
+      run: |
+        cp config/settings.example.yaml config/settings.yaml
+    
     - name: Install SpaCy model
       shell: bash -l {0}
       run: |
