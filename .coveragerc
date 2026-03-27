@@ -1,0 +1,14 @@
+[run]
+source = .
+omit =
+    tests/*
+    */tests/*
+    */test_*.py
+    */__init__.py
+    */conftest.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__.:
