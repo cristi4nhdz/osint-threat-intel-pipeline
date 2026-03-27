@@ -262,42 +262,34 @@ def show() -> None:
         limit = st.slider("Limit", 50, 500, 300)
 
     if mode == "Actor → Origins only":
-        raw = neo4j_query(
-            f"""
+        raw = neo4j_query(f"""
             MATCH (a:ThreatActor)-[:ORIGINATES_FROM]->(c:Country)
             RETURN a.name as actor, c.name as target,
                    'ORIGINATES_FROM' as rtype, 'Country' as ttype
             LIMIT {limit}
-        """
-        )
+        """)
     elif mode == "Actor → Origin + Targets":
-        raw = neo4j_query(
-            f"""
+        raw = neo4j_query(f"""
             MATCH (a:ThreatActor)-[r]->(n)
             WHERE type(r) IN ['TARGETS','ORIGINATES_FROM']
             RETURN a.name as actor, n.name as target,
                    type(r) as rtype, labels(n)[0] as ttype
             LIMIT {limit}
-        """
-        )
+        """)
     elif mode == "Actor → Targets only":
-        raw = neo4j_query(
-            f"""
+        raw = neo4j_query(f"""
             MATCH (a:ThreatActor)-[:TARGETS]->(l:Location)
             RETURN a.name as actor, l.name as target,
                    'TARGETS' as rtype, 'Location' as ttype
             LIMIT {limit}
-        """
-        )
+        """)
     else:
-        raw = neo4j_query(
-            f"""
+        raw = neo4j_query(f"""
             MATCH (a:ThreatActor)-[:USES]->(m:Malware)
             RETURN a.name as actor, m.name as target,
                    'USES' as rtype, 'Malware' as ttype
             LIMIT {limit}
-        """
-        )
+        """)
 
     if not raw:
         st.warning(

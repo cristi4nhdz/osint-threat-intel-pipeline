@@ -43,8 +43,7 @@ def show() -> None:
 
     # Stats cards
     try:
-        stats = sf_query(
-            """
+        stats = sf_query("""
             SELECT
                 COUNT(*) as total,
                 SUM(CASE WHEN ioc_type LIKE 'ip%' THEN 1 ELSE 0 END) as ips,
@@ -52,8 +51,7 @@ def show() -> None:
                 SUM(CASE WHEN ioc_type IN ('sha256', 'md5') THEN 1 ELSE 0 END) as hashes,
                 COUNT(DISTINCT source) as sources
             FROM THREAT_INTEL.PUBLIC.THREAT_IOCS
-        """
-        )
+        """)
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Total IOCs", f"{int(stats['TOTAL'][0]):,}")
         c2.metric("IPs", f"{int(stats['IPS'][0]):,}")
@@ -89,8 +87,7 @@ def show() -> None:
                 )
             """
 
-        results = sf_query(
-            f"""
+        results = sf_query(f"""
             SELECT *
             FROM THREAT_INTEL.PUBLIC.THREAT_IOCS
             WHERE 1=1
@@ -99,8 +96,7 @@ def show() -> None:
             {search_clause}
             ORDER BY first_seen DESC
             LIMIT {result_limit}
-        """
-        )
+        """)
 
         if results.empty:
             st.warning("No IOCs found with the selected filters.")
@@ -136,8 +132,7 @@ def show() -> None:
                         cross_ref_terms.append(actor)
 
                     for term in cross_ref_terms:
-                        related = sf_query(
-                            f"""
+                        related = sf_query(f"""
                             SELECT t.TITLE, t.SOURCE, t.PUBLISHED_AT, t.RELEVANCE_SCORE
                             FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES t,
                             LATERAL FLATTEN(input => ARRAY_CAT(
@@ -147,8 +142,7 @@ def show() -> None:
                             WHERE LOWER(f.value::STRING) = LOWER('{term}')
                             ORDER BY t.PUBLISHED_AT DESC
                             LIMIT 5
-                        """
-                        )
+                        """)
                         if not related.empty:
                             st.caption(f"📰 Related articles mentioning `{term}`:")
                             for _, art in related.iterrows():
@@ -160,44 +154,38 @@ def show() -> None:
 
     # Top malware by IOC count
     st.markdown("### Top malware families by IOC count")
-    top_malware = sf_query(
-        """
+    top_malware = sf_query("""
         SELECT malware_family, COUNT(*) as n
         FROM THREAT_INTEL.PUBLIC.THREAT_IOCS
         WHERE malware_family != '' AND malware_family IS NOT NULL
         GROUP BY malware_family
         ORDER BY n DESC
         LIMIT 15
-    """
-    )
+    """)
     if not top_malware.empty:
         st.bar_chart(top_malware.set_index("MALWARE_FAMILY")["N"])
 
     # Top actors by IOC attribution
     st.markdown("### Top threat actors by IOC attribution")
-    top_actors = sf_query(
-        """
+    top_actors = sf_query("""
         SELECT threat_actor, COUNT(*) as n
         FROM THREAT_INTEL.PUBLIC.THREAT_IOCS
         WHERE threat_actor != '' AND threat_actor IS NOT NULL
         GROUP BY threat_actor
         ORDER BY n DESC
         LIMIT 15
-    """
-    )
+    """)
     if not top_actors.empty:
         st.bar_chart(top_actors.set_index("THREAT_ACTOR")["N"])
 
     # Recent IOCs table
     st.markdown("### Recent IOCs")
-    recent = sf_query(
-        f"""
+    recent = sf_query(f"""
         SELECT ioc_type, ioc_value, malware_family, threat_actor, source, confidence, first_seen
         FROM THREAT_INTEL.PUBLIC.THREAT_IOCS
         ORDER BY first_seen DESC
         LIMIT {result_limit}
-    """
-    )
+    """)
     if not recent.empty:
         st.dataframe(
             recent,
@@ -217,13 +205,11 @@ def show() -> None:
 
     # Source breakdown
     st.markdown("### IOC sources")
-    sources = sf_query(
-        """
+    sources = sf_query("""
         SELECT source, COUNT(*) as n
         FROM THREAT_INTEL.PUBLIC.THREAT_IOCS
         GROUP BY source
         ORDER BY n DESC
-    """
-    )
+    """)
     if not sources.empty:
         st.bar_chart(sources.set_index("SOURCE")["N"])
