@@ -26,7 +26,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate osint
-        pip install flake8 black mypy
+        pip install black==26.3.1 flake8==7.1.1 mypy==1.17.1 pylint==3.3.8
 
     - name: Run Black (formatting check)
       shell: bash -l {0}
@@ -48,4 +48,11 @@ jobs:
       run: |
         conda activate osint
         mypy ingestion processing storage --ignore-missing-imports
+      continue-on-error: true
+
+    - name: Run Pylint (linting)
+      shell: bash -l {0}
+      run: |
+        conda activate osint
+        pylint ingestion processing storage dashboard
       continue-on-error: true
