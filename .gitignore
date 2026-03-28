@@ -22,3 +22,7 @@ tests/.pytest_cache
 tests/.mypy_cache
 logs/*.log
 .coverage
+coverage.xml
+htmlcov
+.mypy_cache
+.pytest_cache

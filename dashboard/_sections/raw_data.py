@@ -69,15 +69,13 @@ def show() -> None:
     where_clause = " AND ".join(where)
 
     # Pull matching articles from Snowflake, newest first
-    df = sf_query(
-        f"""
+    df = sf_query(f"""
         SELECT TITLE, SOURCE, PUBLISHED_AT, RELEVANCE_SCORE,
                THREAT_ACTORS, MALWARE, LOCATIONS, ORIGINAL_URL
         FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES
         WHERE {where_clause}
         ORDER BY PUBLISHED_AT DESC
-    """
-    )
+    """)
 
     if df.empty:
         st.warning("No articles match the current filters.")

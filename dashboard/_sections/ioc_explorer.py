@@ -5,6 +5,7 @@ import streamlit as st
 from dashboard.db import sf_query
 from streamlit_autorefresh import st_autorefresh
 
+
 def show() -> None:
     """Render the IOC Explorer page."""
     st_autorefresh(interval=5000, key="ioc_auto_refresh")
@@ -16,26 +17,26 @@ def show() -> None:
         search_val = st.text_input(
             "Search",
             placeholder="IP, domain, hash, URL, or malware name...",
-            label_visibility="collapsed"
+            label_visibility="collapsed",
         )
     with col_type:
         ioc_type_filter = st.selectbox(
             "Type",
             ["All", "ip:port", "url", "sha256", "md5", "domain"],
-            label_visibility="collapsed"
+            label_visibility="collapsed",
         )
     with col_actor:
         actor_filter = st.selectbox(
             "Linked Actor",
             ["All", "Has Actor", "No Actor"],
-            label_visibility="collapsed"
+            label_visibility="collapsed",
         )
     with col_limit:
         result_limit = st.selectbox(
             "Results Limit",
             [10, 25, 50, 100, 200],
             index=2,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
         )
     with col_btn:
         search_clicked = st.button("Search", use_container_width=True)
@@ -57,7 +58,9 @@ def show() -> None:
         c3.metric("URLs/Domains", f"{int(stats['URLS'][0]):,}")
         c4.metric("Hashes", f"{int(stats['HASHES'][0]):,}")
     except Exception:
-        st.info("No IOC data yet. Run `python -m ingestion.run_abuse` then `python -m storage.run_ioc_loader`.")
+        st.info(
+            "No IOC data yet. Run `python -m ingestion.run_abuse` then `python -m storage.run_ioc_loader`."
+        )
         return
 
     st.divider()
@@ -103,8 +106,8 @@ def show() -> None:
                 with st.container(border=True):
                     cols = st.columns([1, 1, 1, 2])
                     cols[0].markdown(f"**{row.get('IOC_TYPE', '')}**")
-                    malware = row.get('MALWARE_FAMILY', '')
-                    actor = row.get('THREAT_ACTOR', '')
+                    malware = row.get("MALWARE_FAMILY", "")
+                    actor = row.get("THREAT_ACTOR", "")
                     if malware:
                         cols[1].markdown(f"🦠 `{malware}`")
                     if actor:
@@ -116,7 +119,9 @@ def show() -> None:
 
                     detail_cols = st.columns(3)
                     detail_cols[0].caption(f"Threat: {row.get('THREAT_TYPE', '')}")
-                    detail_cols[1].caption(f"First seen: {str(row.get('FIRST_SEEN', ''))[:19]}")
+                    detail_cols[1].caption(
+                        f"First seen: {str(row.get('FIRST_SEEN', ''))[:19]}"
+                    )
                     detail_cols[2].caption(f"Reporter: {row.get('REPORTER', '')}")
 
                     # Cross-reference with articles
@@ -192,7 +197,9 @@ def show() -> None:
                 "THREAT_ACTOR": st.column_config.TextColumn("Actor"),
                 "SOURCE": st.column_config.TextColumn("Source"),
                 "CONFIDENCE": st.column_config.NumberColumn("Conf %"),
-                "FIRST_SEEN": st.column_config.DatetimeColumn("First seen", format="YYYY-MM-DD HH:mm"),
+                "FIRST_SEEN": st.column_config.DatetimeColumn(
+                    "First seen", format="YYYY-MM-DD HH:mm"
+                ),
             },
         )
 

@@ -1,5 +1,10 @@
 # OSINT Threat Intelligence Pipeline
 
+[![Tests](https://github.com/cristi4nhdz/osint-threat-intel-pipeline/actions/workflows/test.yml/badge.svg?event=push)](https://github.com/cristi4nhdz/osint-threat-intel-pipeline/actions/workflows/test.yml)
+[![Code Quality](https://github.com/cristi4nhdz/osint-threat-intel-pipeline/actions/workflows/code-quality.yml/badge.svg?event=push)](https://github.com/cristi4nhdz/osint-threat-intel-pipeline/actions/workflows/code-quality.yml)
+[![codecov](https://codecov.io/gh/cristi4nhdz/osint-threat-intel-pipeline/branch/main/graph/badge.svg)](https://codecov.io/gh/cristi4nhdz/osint-threat-intel-pipeline)
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/)
+
 > **Work In Progress**
 
 A real-time cybersecurity intelligence pipeline that ingests threat data from 5 sources across 4 Kafka topics, enriches articles using spaCy NLP with 200+ mapped threat actors and 100+ malware families, stores enriched data in Snowflake and Neo4j, and displays insights through a 6-page Streamlit dashboard, with 3 Prefect flows automating the entire pipeline on a scheduled basis.
@@ -36,9 +41,9 @@ Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, RSS feeds, Ab
 | Graph | Neo4j |
 | Dashboard | Streamlit, Plotly, D3.js |
 | Orchestration | Prefect, Docker Compose |
-| Testing | pytest, pytest-cov |
+| Testing | pytest, pytest-cov, GitHub Actions |
 | Environment | Conda |
-| Linting | flake8, pylint, black, mypy, yamllint |
+| Linting | flake8, pylint, black, mypy, yamllint, GitHub Actions |
 
 ---
 
@@ -55,7 +60,7 @@ Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, RSS feeds, Ab
 - **Live Pipeline Status** — Sidebar indicators for Snowflake, Neo4j, Kafka, and data freshness
 - **Prefect Orchestration** — 3 scheduled flows running in Docker: ingestion every 24 hours, enrichment and storage loading every 6 hours, IOC loading every 6 hours
 - **Kafka-Backed Event Bus** — Uses 4 Kafka topics with decoupled producers and consumers to improve reliability and enable message replay
-- **Test Suite** — pytest tests covering entity extraction, producers, consumers, and loaders with mocked Kafka, Snowflake, and Neo4j connections
+- **Test Suite** — 21 pytest tests across enrichment, producers, consumers, and loaders with 86% code coverage, running automatically on every push via GitHub Actions
 - **Config-Driven** — YAML-based configuration for sources, topics, and pipeline behavior
 - **Containerized** — Full Docker Compose setup for Kafka, Neo4j, Prefect server, flow runner, and dashboard
 
@@ -126,6 +131,7 @@ docker compose down
 
 ```text
 osint-threat-intel-pipeline/
+|-- .github/workflows/    # GitHub Actions CI workflow
 |-- config/               # YAML configuration files
 |-- dashboard/            # Streamlit dashboard and page sections
 |   |-- _sections/        # Overview, threat map, actor graph, actor intel, IOC explorer, raw data

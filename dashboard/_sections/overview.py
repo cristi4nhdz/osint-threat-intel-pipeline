@@ -102,13 +102,11 @@ def show() -> None:
 
     # Metrics queries
     total = sf_query("SELECT COUNT(*) as n FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES")
-    actors_q = sf_query(
-        """
+    actors_q = sf_query("""
         SELECT COUNT(DISTINCT f.value::STRING) as n
         FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES t,
         LATERAL FLATTEN(input => t.THREAT_ACTORS) f
-    """
-    )
+    """)
     high_q = sf_query(
         "SELECT COUNT(*) as n FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES WHERE RELEVANCE_SCORE >= 0.8"
     )
@@ -132,16 +130,14 @@ def show() -> None:
         st.markdown(
             "<div class='section-label'>Activity Timeline</div>", unsafe_allow_html=True
         )
-        timeline = sf_query(
-            """
+        timeline = sf_query("""
             SELECT DATE_TRUNC('day', PUBLISHED_AT) as day,
                    COUNT(*) as articles,
                    ROUND(AVG(RELEVANCE_SCORE), 2) as avg_score
             FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES
             WHERE PUBLISHED_AT IS NOT NULL
             GROUP BY day ORDER BY day
-        """
-        )
+        """)
         if not timeline.empty:
             fig = go.Figure()
             fig.add_trace(
@@ -172,15 +168,13 @@ def show() -> None:
         st.markdown(
             "<div class='section-label'>Top Threat Actors</div>", unsafe_allow_html=True
         )
-        actors_df = sf_query(
-            """
+        actors_df = sf_query("""
             SELECT f.value::STRING as actor, COUNT(*) as n
             FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES t,
             LATERAL FLATTEN(input => t.THREAT_ACTORS) f
             GROUP BY f.value::STRING
             ORDER BY n DESC LIMIT 8
-        """
-        )
+        """)
         if not actors_df.empty:
             st.markdown(
                 build_stat_rows(actors_df, "ACTOR", "N"), unsafe_allow_html=True
@@ -196,15 +190,13 @@ def show() -> None:
             "<div class='section-label'>Latest High-Priority Incidents</div>",
             unsafe_allow_html=True,
         )
-        feed = sf_query(
-            """
+        feed = sf_query("""
             SELECT TITLE, SOURCE, PUBLISHED_AT, RELEVANCE_SCORE,
                    THREAT_ACTORS, ORIGINAL_URL
             FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES
             WHERE RELEVANCE_SCORE >= 0.6
             ORDER BY PUBLISHED_AT DESC LIMIT 15
-        """
-        )
+        """)
 
         feed_html = ""
         for _, row in feed.iterrows():
@@ -252,16 +244,14 @@ def show() -> None:
             "<div class='section-label'>Top Malware</div>", unsafe_allow_html=True
         )
         generic_list = ", ".join(f"'{m}'" for m in MALWARE_GENERIC)
-        mal_df = sf_query(
-            f"""
+        mal_df = sf_query(f"""
             SELECT f.value::STRING as malware, COUNT(*) as n
             FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES t,
             LATERAL FLATTEN(input => t.MALWARE) f
             WHERE f.value::STRING NOT IN ({generic_list})
             GROUP BY f.value::STRING
             ORDER BY n DESC LIMIT 8
-        """
-        )
+        """)
         if not mal_df.empty:
             st.markdown(
                 build_stat_rows(mal_df, "MALWARE", "N", RED), unsafe_allow_html=True
@@ -271,13 +261,11 @@ def show() -> None:
             "<div class='section-label' style='margin-top:16px;'>Sources</div>",
             unsafe_allow_html=True,
         )
-        src_df = sf_query(
-            """
+        src_df = sf_query("""
             SELECT SOURCE, COUNT(*) as n
             FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES
             GROUP BY SOURCE ORDER BY n DESC LIMIT 6
-        """
-        )
+        """)
         if not src_df.empty:
             total_n = src_df["N"].sum()
             src_html = ""

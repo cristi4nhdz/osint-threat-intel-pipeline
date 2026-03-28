@@ -162,7 +162,7 @@ class RSSProducer(BaseProducer):
     @staticmethod
     def parse_date(entry: dict) -> str:
         """Extract and normalize the publication date from an RSS entry."""
-        
+
         # try structured date first
         if entry.get("published_parsed"):
             try:

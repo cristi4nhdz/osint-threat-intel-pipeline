@@ -92,16 +92,14 @@ def show() -> None:
     )
 
     # Fetch articles with location & relevance
-    map_df = sf_query(
-        """
+    map_df = sf_query("""
         SELECT t.TITLE, t.SOURCE, t.RELEVANCE_SCORE, t.ORIGINAL_URL,
                f.value::STRING as location
         FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES t,
         LATERAL FLATTEN(input => t.LOCATIONS) f
         WHERE t.RELEVANCE_SCORE >= 0.3
         ORDER BY t.RELEVANCE_SCORE DESC
-    """
-    )
+    """)
 
     # Prepare scattergeo data
     lats, lons, texts, scores, sizes = [], [], [], [], []
@@ -196,16 +194,14 @@ def show() -> None:
         unsafe_allow_html=True,
     )
 
-    loc_df = sf_query(
-        """
+    loc_df = sf_query("""
         SELECT f.value::STRING as location, COUNT(*) as n
         FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES t,
         LATERAL FLATTEN(input => t.LOCATIONS) f
         GROUP BY f.value::STRING
         ORDER BY n DESC
         LIMIT 12
-    """
-    )
+    """)
 
     # Render horizontal bars
     if not loc_df.empty:

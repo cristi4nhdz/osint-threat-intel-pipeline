@@ -44,8 +44,7 @@ def clean_desc(text: str | None) -> str:
 def get_groups() -> list[dict]:
     """Fetch threat actor nodes with MITRE IDs and related metadata from Neo4j."""
 
-    return neo4j_query(
-        """
+    return neo4j_query("""
         MATCH (a:ThreatActor)
         WHERE a.mitre_id IS NOT NULL
         OPTIONAL MATCH (a)-[:ORIGINATES_FROM]->(c:Country)
@@ -53,8 +52,7 @@ def get_groups() -> list[dict]:
                a.aliases as aliases, a.description as description,
                a.url as url, collect(DISTINCT c.name) as origins
         ORDER BY a.name
-    """
-    )
+    """)
 
 
 def get_relationships() -> tuple[
@@ -65,50 +63,39 @@ def get_relationships() -> tuple[
     """Retrieve malware, location, and article relationships for threat actors."""
 
     # Fetch malware via direct links and via actor aliases
-    mal_direct = neo4j_query(
-        """
+    mal_direct = neo4j_query("""
         MATCH (a:ThreatActor)-[:USES]->(m:Malware)
         WHERE a.mitre_id IS NOT NULL
         RETURN a.name as actor, m.name as malware
-    """
-    )
-    mal_alias = neo4j_query(
-        """
+    """)
+    mal_alias = neo4j_query("""
         MATCH (mitre:ThreatActor)
         WHERE mitre.mitre_id IS NOT NULL AND mitre.aliases IS NOT NULL
         UNWIND mitre.aliases AS alias
         MATCH (n:ThreatActor {name:alias})-[:USES]->(m:Malware)
         WHERE n.mitre_id IS NULL
         RETURN mitre.name as actor, m.name as malware
-    """
-    )
-    loc_direct = neo4j_query(
-        """
+    """)
+    loc_direct = neo4j_query("""
         MATCH (a:ThreatActor)-[:TARGETS]->(l:Location)
         WHERE a.mitre_id IS NOT NULL
         RETURN a.name as actor, l.name as location
-    """
-    )
-    loc_alias = neo4j_query(
-        """
+    """)
+    loc_alias = neo4j_query("""
         MATCH (mitre:ThreatActor)
         WHERE mitre.mitre_id IS NOT NULL AND mitre.aliases IS NOT NULL
         UNWIND mitre.aliases AS alias
         MATCH (n:ThreatActor {name:alias})-[:TARGETS]->(l:Location)
         WHERE n.mitre_id IS NULL
         RETURN mitre.name as actor, l.name as location
-    """
-    )
-    art_direct = neo4j_query(
-        """
+    """)
+    art_direct = neo4j_query("""
         MATCH (art:Article)-[:MENTIONS_ACTOR]->(a:ThreatActor)
         WHERE a.mitre_id IS NOT NULL
         RETURN a.name as actor, art.title as title,
                art.url as url, art.source as source
-    """
-    )
-    art_alias = neo4j_query(
-        """
+    """)
+    art_alias = neo4j_query("""
         MATCH (mitre:ThreatActor)
         WHERE mitre.mitre_id IS NOT NULL AND mitre.aliases IS NOT NULL
         UNWIND mitre.aliases AS alias
@@ -116,8 +103,7 @@ def get_relationships() -> tuple[
         WHERE n.mitre_id IS NULL
         RETURN mitre.name as actor, art.title as title,
                art.url as url, art.source as source
-    """
-    )
+    """)
 
     mal_map: dict[str, set[str]] = {}
     loc_map: dict[str, set[str]] = {}
@@ -201,13 +187,11 @@ def show() -> None:
         mal_map, loc_map, art_map = get_relationships()
 
     # Actors present in the live Snowflake pipeline (used to flag INTEL badge)
-    linked_df = sf_query(
-        """
+    linked_df = sf_query("""
         SELECT DISTINCT f.value::STRING as actor
         FROM THREAT_INTEL.PUBLIC.THREAT_ARTICLES t,
         LATERAL FLATTEN(input => t.THREAT_ACTORS) f
-    """
-    )
+    """)
     linked_actors = (
         set(linked_df["ACTOR"].str.upper().tolist()) if not linked_df.empty else set()
     )
