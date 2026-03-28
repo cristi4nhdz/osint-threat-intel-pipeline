@@ -72,7 +72,7 @@ class EnrichmentConsumer:
         count = 0
 
         while True:
-            records = self.consumer.poll(timeout_ms=20000)
+            records = self.consumer.poll(timeout_ms=600000)
             if not records:
                 break
             for tp, messages in records.items():

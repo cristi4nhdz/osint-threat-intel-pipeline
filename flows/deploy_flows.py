@@ -3,6 +3,7 @@
 
 from datetime import timedelta
 from prefect import serve
+from config.validator import ConfigValidator
 from flows.osint_flows import (
     osint_ingestion_flow,
     enrichment_loader_flow,
@@ -10,6 +11,9 @@ from flows.osint_flows import (
 )
 
 if __name__ == "__main__":
+    validator = ConfigValidator()
+    if not validator.validate():
+        exit(1)
     print("Deploying flows")
 
     serve(
