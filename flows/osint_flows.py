@@ -149,6 +149,21 @@ def run_ioc_loader():
         raise Exception(f"IOC loading failed: {result.stderr}")
 
 
+@task
+def run_s3_archive():
+    result = subprocess.run(
+        ["python", "-m", "storage.run_s3_archiver"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    print(result.stdout)
+    if result.returncode != 0:
+        print(result.stderr)
+        raise Exception(f"S3 Archiving failed: {result.stderr}")
+
+
 # flows
 @flow
 def osint_ingestion_flow():
@@ -169,3 +184,8 @@ def enrichment_loader_flow():
 @flow
 def ioc_loader_flow():
     run_ioc_loader()
+
+
+@flow
+def s3_archive_flow():
+    run_s3_archive()

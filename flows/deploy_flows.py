@@ -8,6 +8,7 @@ from flows.osint_flows import (
     osint_ingestion_flow,
     enrichment_loader_flow,
     ioc_loader_flow,
+    s3_archive_flow,
 )
 
 if __name__ == "__main__":
@@ -30,6 +31,11 @@ if __name__ == "__main__":
         # IOC loader, every 6 hours
         ioc_loader_flow.to_deployment(
             name="ioc-loader",
+            interval=timedelta(hours=6),
+        ),
+        # S3 Archive loader, every 6 hours
+        s3_archive_flow.to_deployment(
+            name="s3-loader",
             interval=timedelta(hours=6),
         ),
     )
