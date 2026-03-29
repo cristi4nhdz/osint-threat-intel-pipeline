@@ -5,8 +5,6 @@
 [![codecov](https://codecov.io/gh/cristi4nhdz/osint-threat-intel-pipeline/branch/main/graph/badge.svg)](https://codecov.io/gh/cristi4nhdz/osint-threat-intel-pipeline)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/)
 
-> **Work In Progress**
-
 A real-time cybersecurity intelligence pipeline that ingests threat data from 5 sources across 4 Kafka topics, enriches articles using spaCy NLP with 200+ mapped threat actors and 100+ malware families, stores enriched data in Snowflake and Neo4j, archives raw events to S3, and displays insights through a 6-page Streamlit dashboard, with 4 Prefect flows automating the entire pipeline on a scheduled basis.
 
 ---
@@ -15,6 +13,7 @@ A real-time cybersecurity intelligence pipeline that ingests threat data from 5 
 
 - [Overview](#overview)
 - [Architecture](#architecture)
+- [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Features](#features)
 - [Getting Started](#getting-started)
@@ -105,6 +104,42 @@ flowchart TD
     P4 -.->|schedules| S3
     
 ```
+
+---
+
+## Screenshots
+
+### Overview
+
+![Overview](docs/overview.png)
+
+### Threat Map
+
+![Threat Map](docs/threat_map.png)
+
+### Actor Graph
+
+![Actor Graph](docs/actor_graph.png)
+
+### Actor Intelligence
+
+![Actor Intelligence](docs/actor_intel.png)
+
+### Raw Data
+
+![Raw Data](docs/raw_data.png)
+
+### IOC Explorer
+
+![IOC Explorer](docs/ioc_explorer.png)
+
+### Prefect Scheduled Flows
+
+![Prefect Flows](docs/prefect_flows.png)
+
+### GitHub Actions CI
+
+![GitHub Actions](docs/github_actions.png)
 
 ---
 
