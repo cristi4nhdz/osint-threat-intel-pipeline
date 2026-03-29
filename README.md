@@ -62,6 +62,7 @@ Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, RSS feeds, Ab
 - **Prefect Orchestration** — 4 scheduled flows running in Docker: ingestion every 24 hours, enrichment and storage loading every 6 hours, IOC loading every 6 hours, S3 archival every 6 hours
 - **Kafka-Backed Event Bus** — Uses 4 Kafka topics with decoupled producers and consumers to improve reliability and enable message replay
 - **Test Suite** — 21 pytest tests across enrichment, producers, consumers, and loaders with 86% code coverage, running automatically on every push via GitHub Actions
+- **Config Validation** — startup validator checks all required fields, detects unfilled placeholder values, and validates numeric ranges before the pipeline runs
 - **Config-Driven** — YAML-based configuration for sources, topics, and pipeline behavior
 - **Containerized** — Full Docker Compose setup with persistent volumes for Kafka, Neo4j, Prefect server, flow runner, and dashboard
 
@@ -135,7 +136,7 @@ docker compose down
 ```text
 osint-threat-intel-pipeline/
 |-- .github/workflows/    # GitHub Actions CI and code quality workflows
-|-- config/               # YAML configuration files
+|-- config/               # YAML configuration files and validator
 |-- dashboard/            # Streamlit dashboard and page sections
 |   |-- _sections/        # Overview, threat map, actor graph, actor intel, IOC explorer, raw data
 |-- flows/                # Prefect flow definitions and deployment script
