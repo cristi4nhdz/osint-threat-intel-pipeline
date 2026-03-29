@@ -14,6 +14,7 @@ A real-time cybersecurity intelligence pipeline that ingests threat data from 5 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Features](#features)
 - [Getting Started](#getting-started)
@@ -27,6 +28,83 @@ A real-time cybersecurity intelligence pipeline that ingests threat data from 5 
 ## Overview
 
 Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, RSS feeds, Abuse.ch, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output is loaded into Snowflake for storage and Neo4j for relationship graph building across 200+ threat actors. Raw Kafka messages are archived to AWS S3 in JSON batches for disaster recovery. A 6-page Streamlit dashboard provides live visualization of threats, actors, IOCs, and geo activity. 4 Prefect flows orchestrate the entire pipeline automatically inside Docker.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph Sources["Ingestion Sources"]
+        NewsAPI
+        OTX["AlienVault OTX"]
+        RSS["RSS Feeds"]
+        Abuse["Abuse.ch"]
+        MITRE["MITRE ATT&CK"]
+    end
+
+    subgraph Kafka["Kafka Event Bus"]
+        K1["osint.news"]
+        K2["osint.mitre"]
+        K3["osint.enriched"]
+        K4["osint.iocs"]
+    end
+
+    subgraph Processing[" NLP Enrichment"]
+        Enrichment["spaCy Transformer\nEntity Extraction\nRelevance Scoring"]
+    end
+
+    subgraph Storage["Storage"]
+        Snowflake["Snowflake\nArticles"]
+        Neo4j["Neo4j\nActor Graph"]
+        S3["AWS S3\nRaw Archive"]
+        IOC["Snowflake\nIOCs"]
+    end
+
+    subgraph Orchestration["Prefect Flows"]
+        P1["osint-ingestion-flow\nevery 24h"]
+        P2["enrichment-loader-flow\nevery 6h"]
+        P3["ioc-loader-flow\nevery 6h"]
+        P4["s3-archive-flow\nevery 6h"]
+    end
+
+    subgraph Dashboard["Streamlit Dashboard"]
+        D1["Overview"]
+        D2["Threat Map"]
+        D3["Actor Graph"]
+        D4["Actor Intelligence"]
+        D5["IOC Explorer"]
+        D6["Raw Data"]
+    end
+
+    NewsAPI --> K1
+    OTX --> K1
+    RSS --> K1
+    Abuse --> K4
+    MITRE --> K2
+
+    K1 --> Enrichment
+    Enrichment --> K3
+
+    K3 --> Snowflake
+    K3 --> Neo4j
+    K4 --> IOC
+    K4 --> Neo4j
+    K1 & K2 & K3 & K4 --> S3
+
+    Snowflake --> D1
+    Snowflake --> D2
+    Snowflake --> D5
+    Snowflake --> D6
+    Neo4j --> D3
+    Neo4j --> D4
+
+    P1 -.->|schedules| Sources
+    P2 -.->|schedules| Processing
+    P3 -.->|schedules| IOC
+    P4 -.->|schedules| S3
+    
+```
 
 ---
 
@@ -130,6 +208,19 @@ docker compose down
 ```
 
 ---
+
+### Test Coverage
+
+| Module | Statements | Coverage |
+| --- | --- | --- |
+| `processing/actor_data.py` | 9 | 100% |
+| `processing/enrichment_consumer.py` | 63 | 95% |
+| `processing/entity_extractor.py` | 110 | 91% |
+| `ingestion/base_producer.py` | 28 | 93% |
+| `ingestion/news_producer.py` | 40 | 88% |
+| `storage/snowflake_loader.py` | 87 | 89% |
+| `storage/ioc_loader.py` | 129 | 73% |
+| **Total** | **466** | **86%** |
 
 ## Project Structure
 
