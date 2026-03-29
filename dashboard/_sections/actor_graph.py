@@ -140,12 +140,12 @@ function init(W, H) {{
     svg.on("click", e => {{ if (e.target === svg.node()) closePanel(); }});
 
     const sim = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(links).id(d => d.id).distance(55))
-        .force("charge", d3.forceManyBody().strength(-70))
+        .force("link", d3.forceLink(links).id(d => d.id).distance(140))
+        .force("charge", d3.forceManyBody().strength(-180))
         .force("center", d3.forceCenter(W / 2, H / 2))
-        .force("x", d3.forceX(W / 2).strength(0.06))
-        .force("y", d3.forceY(H / 2).strength(0.06))
-        .force("collide", d3.forceCollide(12));
+        .force("x", d3.forceX(W / 2).strength(0.05))
+        .force("y", d3.forceY(H / 2).strength(0.05))
+        .force("collide", d3.forceCollide(28));
 
     const link = g.append("g").selectAll("line").data(links).join("line")
         .attr("class", d => {{
