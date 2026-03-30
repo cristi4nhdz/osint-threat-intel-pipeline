@@ -15,7 +15,6 @@ dependencies:
       - neo4j
       - boto3
       - streamlit
-      - feedparser
       - requests
       - pyyaml
       - newsapi-python
@@ -31,3 +30,8 @@ dependencies:
       - pytest-cov
       - pytest-mock 
       - faker
+      - sentence-transformers
+      - chromadb
+      - fastapi
+      - uvicorn
+      - python-multipart
