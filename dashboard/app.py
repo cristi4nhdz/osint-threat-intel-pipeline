@@ -14,6 +14,7 @@ from dashboard._sections import (
     actor_intel,
     raw_data,
     ioc_explorer,
+    semantic,
 )
 
 st.set_page_config(
@@ -336,6 +337,19 @@ def get_pipeline_status() -> dict:
     except Exception:
         status["iocs"] = ("err", "unknown")
 
+    # RAG API check
+    try:
+        import requests
+
+        response = requests.get("http://localhost:8000/stats", timeout=2)
+        if response.ok:
+            stats = response.json()
+            status["rag"] = ("ok", f"{stats['total_chunks']} chunks")
+        else:
+            status["rag"] = ("err", "offline")
+    except Exception:
+        status["rag"] = ("err", "offline")
+
     return status
 
 
@@ -346,6 +360,7 @@ PAGES = {
     "🎯  Actor Intelligence": actor_intel,
     "🗄  Raw Data": raw_data,
     "🧬 IOC Explorer": ioc_explorer,
+    "🔍 Semantic Search": semantic,
 }
 
 with st.sidebar:
@@ -393,6 +408,7 @@ with st.sidebar:
         "kafka": "Kafka",
         "freshness": "Freshness",
         "iocs": "IOCs",
+        "rag": "RAG API",
     }
 
     # Build status rows as inline HTML with colored indicator dots
