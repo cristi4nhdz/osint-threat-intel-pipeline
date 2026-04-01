@@ -23,7 +23,7 @@ if __name__ == "__main__":
             name="ingestion",
             interval=timedelta(hours=24),
         ),
-        # Enrichment + Storage loader, every 6 hours
+        # Enrichment + Storage + Embedding loader, every 6 hours
         enrichment_loader_flow.to_deployment(
             name="enrichment-loader",
             interval=timedelta(hours=6),
