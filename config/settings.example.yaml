@@ -20,6 +20,12 @@ neo4j:
   user: neo4j
   password: password
 
+weaviate:
+  url: http://weaviate:8080
+
+rag:
+  api_url: http://rag-api:8000
+
 aws:
   bucket_name: "YOUR_BUCKET_NAME_HERE"
   region: "us-east-1"
