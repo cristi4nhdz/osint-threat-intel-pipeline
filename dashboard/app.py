@@ -340,15 +340,15 @@ def get_pipeline_status() -> dict:
     # RAG API check
     try:
         import requests
+        from dashboard.db import get_rag_api_url
 
-        response = requests.get("http://localhost:8000/stats", timeout=2)
+        response = requests.get(f"{get_rag_api_url()}/stats", timeout=2)
         if response.ok:
-            stats = response.json()
-            status["rag"] = ("ok", f"{stats['total_chunks']} chunks")
+            status["semantic"] = ("ok", "up to date")
         else:
-            status["rag"] = ("err", "offline")
+            status["semantic"] = ("err", "offline")
     except Exception:
-        status["rag"] = ("err", "offline")
+        status["semantic"] = ("err", "offline")
 
     return status
 
@@ -384,12 +384,17 @@ with st.sidebar:
     selection = st.radio("", list(PAGES.keys()), label_visibility="collapsed")
 
     # Live status indicators for each backend service
+    st.markdown("<div style='height:32px;'></div>", unsafe_allow_html=True)
+
     st.markdown(
         """
-    <div style='margin-top:24px;padding-top:12px;border-top:1px solid #2A1C38;
-                font-family:IBM Plex Mono,monospace;font-size:0.58rem;
-                color:#344858;text-transform:uppercase;letter-spacing:0.14em;
-                padding-bottom:6px;'>Pipeline</div>
+    <div style='margin-top:8px;margin-bottom:10px;'>
+        <div style='font-family:IBM Plex Mono,monospace;font-size:0.6rem;
+                    color:#344858;text-transform:uppercase;letter-spacing:0.14em;
+                    padding-bottom:8px;border-bottom:1px solid #2A1C38;'>
+            Pipeline Health
+        </div>
+    </div>
     """,
         unsafe_allow_html=True,
     )
@@ -408,7 +413,7 @@ with st.sidebar:
         "kafka": "Kafka",
         "freshness": "Freshness",
         "iocs": "IOCs",
-        "rag": "RAG API",
+        "semantic": "Semantic index",
     }
 
     # Build status rows as inline HTML with colored indicator dots
@@ -418,7 +423,7 @@ with st.sidebar:
         color, shadow = STATUS_COLORS[state]
         rows_html += (
             "<div style='display:flex;justify-content:space-between;"
-            "align-items:center;padding:4px 0;"
+            "align-items:center;padding:6px 0;"
             "border-bottom:1px solid #1A1228;"
             "font-family:IBM Plex Mono,monospace;'>"
             "<div style='display:flex;align-items:center;gap:6px;'>"
