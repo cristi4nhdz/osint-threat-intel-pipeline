@@ -20,7 +20,7 @@ dependencies:
       - newsapi-python
       - attackcti
       - OTXv2
-      - plotly 
+      - plotly
       - pandas
       - pydeck
       - feedparser
@@ -28,10 +28,10 @@ dependencies:
       - prefect
       - pytest
       - pytest-cov
-      - pytest-mock 
+      - pytest-mock
       - faker
       - sentence-transformers
-      - chromadb
+      - weaviate-client
       - fastapi
       - uvicorn
       - python-multipart
