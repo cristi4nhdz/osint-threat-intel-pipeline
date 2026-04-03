@@ -110,15 +110,6 @@ services:
         condition: service_started
     ports:
       - "8000:8000"
-    environment:
-      WEAVIATE_URL: http://weaviate:8080
-      OLLAMA_HOST: http://ollama:11434
-      OLLAMA_MODEL: llama3:8b
-      RETRIEVE_K: 25
-      ANALYSIS_K: 5
-      DISPLAY_K: 10
-      MIN_SIMILARITY: 0.45
-      MAX_PER_SOURCE: 2
     volumes:
       - ./logs:/app/logs
     command: conda run -n osint python -m api.rag_api
