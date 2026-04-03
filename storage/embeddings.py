@@ -27,19 +27,36 @@ def parse_json_field(value) -> list:
 
 def chunk_article(article: dict) -> list[dict]:
     """Generate a single chunk from the article title with metadata."""
-    title = article.get("title", "")
+    title = article.get("title", "").strip()
     if not title:
         return []
 
+    actors = article.get("threat_actors", []) or []
+    malware = article.get("malware", []) or []
+    locations = article.get("locations", []) or []
+    source = article.get("source", "").strip()
+
+    parts = [f"Title: {title}"]
+    if source:
+        parts.append(f"Source: {source}")
+    if actors:
+        parts.append(f"Threat Actors: {', '.join(actors)}")
+    if malware:
+        parts.append(f"Malware: {', '.join(malware)}")
+    if locations:
+        parts.append(f"Locations: {', '.join(locations)}")
+
+    enriched_text = "\n".join(parts)
+
     return [
         {
-            "text": title.strip(),
+            "text": enriched_text,
             "article_id": article.get("id", "unknown"),
             "article_url": article.get("original_url", ""),
-            "source": article.get("source", ""),
-            "actors": article.get("threat_actors", []),
-            "malware": article.get("malware", []),
-            "locations": article.get("locations", []),
+            "source": source,
+            "actors": actors,
+            "malware": malware,
+            "locations": locations,
             "chunk_index": 0,
             "total_chunks": 1,
         }
@@ -116,7 +133,12 @@ class EmbeddingLoader:
                 if chunks:
                     batch_added += self.vector_store.add_chunks(chunks)
             total_chunks += batch_added
-            logger.info("Batch %d: +%d chunks, Total: %d", i // batch_size + 1, batch_added, total_chunks)
+            logger.info(
+                "Batch %d: +%d chunks, Total: %d",
+                i // batch_size + 1,
+                batch_added,
+                total_chunks,
+            )
 
         logger.info(
             "Complete: %d articles, %d chunks, store %d -> %d",
