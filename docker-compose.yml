@@ -51,6 +51,25 @@ services:
       timeout: 5s
       retries: 5
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    entrypoint: >
+      sh -c "
+        echo 'Starting Ollama...' &&
+        ollama serve &
+        sleep 5 &&
+        echo 'Pulling llama3:8b if missing...' &&
+        ollama pull llama3:8b &&
+        echo 'Ollama model ready.' &&
+        wait
+      "
+
   prefect-server:
     image: prefecthq/prefect:3-latest
     command: prefect server start --host 0.0.0.0
@@ -87,10 +106,19 @@ services:
     depends_on:
       weaviate:
         condition: service_healthy
+      ollama:
+        condition: service_started
     ports:
       - "8000:8000"
     environment:
       WEAVIATE_URL: http://weaviate:8080
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: llama3:8b
+      RETRIEVE_K: 25
+      ANALYSIS_K: 5
+      DISPLAY_K: 10
+      MIN_SIMILARITY: 0.45
+      MAX_PER_SOURCE: 2
     volumes:
       - ./logs:/app/logs
     command: conda run -n osint python -m api.rag_api
@@ -110,3 +138,4 @@ volumes:
   neo4j-data:
   prefect-data:
   weaviate-data:
+  ollama-data:
