@@ -35,3 +35,4 @@ dependencies:
       - fastapi
       - uvicorn
       - python-multipart
+      - ollama
