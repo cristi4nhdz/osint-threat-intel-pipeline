@@ -15,13 +15,12 @@ dependencies:
       - neo4j
       - boto3
       - streamlit
-      - feedparser
       - requests
       - pyyaml
       - newsapi-python
       - attackcti
       - OTXv2
-      - plotly 
+      - plotly
       - pandas
       - pydeck
       - feedparser
@@ -29,5 +28,11 @@ dependencies:
       - prefect
       - pytest
       - pytest-cov
-      - pytest-mock 
+      - pytest-mock
       - faker
+      - sentence-transformers
+      - weaviate-client
+      - fastapi
+      - uvicorn
+      - python-multipart
+      - ollama

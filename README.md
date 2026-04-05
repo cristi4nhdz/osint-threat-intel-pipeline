@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/cristi4nhdz/osint-threat-intel-pipeline/branch/main/graph/badge.svg)](https://codecov.io/gh/cristi4nhdz/osint-threat-intel-pipeline)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/)
 
-A real-time cybersecurity intelligence pipeline that ingests threat data from 5 sources across 4 Kafka topics, enriches articles using spaCy NLP with 200+ mapped threat actors and 100+ malware families, stores enriched data in Snowflake and Neo4j, archives raw events to S3, and displays insights through a 6-page Streamlit dashboard, with 4 Prefect flows automating the entire pipeline on a scheduled basis.
+A real-time cybersecurity intelligence pipeline that ingests threat data from 5 sources across 4 Kafka topics, enriches articles using spaCy NLP with 200+ mapped threat actors and 100+ malware families, stores enriched data in Snowflake and Neo4j, archives raw events to S3, and displays insights through a 7-page Streamlit dashboard, with 4 Prefect flows automating the entire pipeline on a scheduled basis and an AI-powered threat analyst backed by Ollama and Weaviate.
 
 ---
 
@@ -26,7 +26,7 @@ A real-time cybersecurity intelligence pipeline that ingests threat data from 5 
 
 ## Overview
 
-Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, RSS feeds, Abuse.ch, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output is loaded into Snowflake for storage and Neo4j for relationship graph building across 200+ threat actors. Raw Kafka messages are archived to AWS S3 in JSON batches for disaster recovery. A 6-page Streamlit dashboard provides live visualization of threats, actors, IOCs, and geo activity. 4 Prefect flows orchestrate the entire pipeline automatically inside Docker.
+Pulls cybersecurity and threat intel from NewsAPI, AlienVault OTX, RSS feeds, Abuse.ch, and MITRE ATT&CK, pushes raw events into Kafka, and runs NLP enrichment via spaCy transformer models to extract entities and signals. Enriched output is loaded into Snowflake for storage and Neo4j for relationship graph building across 200+ threat actors. Raw Kafka messages are archived to AWS S3 in JSON batches for disaster recovery. A 7-page Streamlit dashboard provides live visualization of threats, actors, IOCs, geo activity, and AI-powered semantic search via a RAG pipeline backed by Weaviate and Ollama. 4 Prefect flows orchestrate the entire pipeline automatically inside Docker.
 
 ---
 
@@ -49,7 +49,7 @@ flowchart TD
         K4["osint.iocs"]
     end
 
-    subgraph Processing[" NLP Enrichment"]
+    subgraph Processing["NLP Enrichment"]
         Enrichment["spaCy Transformer\nEntity Extraction\nRelevance Scoring"]
     end
 
@@ -58,6 +58,7 @@ flowchart TD
         Neo4j["Neo4j\nActor Graph"]
         S3["AWS S3\nRaw Archive"]
         IOC["Snowflake\nIOCs"]
+        Weaviate["Weaviate\nVector Store"]
     end
 
     subgraph Orchestration["Prefect Flows"]
@@ -67,6 +68,11 @@ flowchart TD
         P4["s3-archive-flow\nevery 6h"]
     end
 
+    subgraph RAG["RAG Pipeline"]
+        Ollama["Ollama\nllama3:8b"]
+        RAGAPI["RAG API\nFastAPI"]
+    end
+
     subgraph Dashboard["Streamlit Dashboard"]
         D1["Overview"]
         D2["Threat Map"]
@@ -74,6 +80,7 @@ flowchart TD
         D4["Actor Intelligence"]
         D5["IOC Explorer"]
         D6["Raw Data"]
+        D7["Semantic Search"]
     end
 
     NewsAPI --> K1
@@ -91,18 +98,23 @@ flowchart TD
     K4 --> Neo4j
     K1 & K2 & K3 & K4 --> S3
 
+    Snowflake --> Weaviate
+    Weaviate --> RAGAPI
+    Ollama --> RAGAPI
+
     Snowflake --> D1
     Snowflake --> D2
     Snowflake --> D5
     Snowflake --> D6
     Neo4j --> D3
     Neo4j --> D4
+    RAGAPI --> D7
 
     P1 -.->|schedules| Sources
     P2 -.->|schedules| Processing
     P3 -.->|schedules| IOC
     P4 -.->|schedules| S3
-    
+
 ```
 
 ---
@@ -133,6 +145,10 @@ flowchart TD
 
 ![IOC Explorer](docs/ioc_explorer.png)
 
+### Semantic Search
+
+![Semantic Search](docs/semantic_search.png)
+
 ### Prefect Scheduled Flows
 
 ![Prefect Flows](docs/prefect_flows.png)
@@ -151,7 +167,9 @@ flowchart TD
 | NLP | spaCy (`en_core_web_trf`) |
 | Messaging | Apache Kafka |
 | Storage | Snowflake, AWS S3 |
+| Vector Store | Weaviate |
 | Graph | Neo4j |
+| LLM | Ollama (`llama3:8b`) |
 | Dashboard | Streamlit, Plotly, D3.js |
 | Orchestration | Prefect, Docker Compose |
 | Testing | pytest, pytest-cov, GitHub Actions |
@@ -169,15 +187,16 @@ flowchart TD
 - **IOC Storage** — Indicators of compromise loaded from Kafka into Snowflake every 6 hours
 - **S3 Archival** — Raw Kafka messages from all 4 topics archived to AWS S3 in JSON batches every 6 hours for disaster recovery and downstream processing
 - **Neo4j Graph** — Actor relationship graph linking 200+ threat actors to malware, locations, and origin countries, refreshed every 6 hours via Prefect
-- **6-Page Streamlit Dashboard** — Overview metrics, geo threat map, interactive D3 actor graph, MITRE ATT&CK actor intelligence, IOC explorer, and raw data explorer with CSV export, served via Docker
+- **RAG Semantic Search** — Weaviate vector store with sentence-transformer embeddings and Ollama-powered grounded threat analysis via a FastAPI RAG API
+- **7-Page Streamlit Dashboard** — Overview metrics, geo threat map, interactive D3 actor graph, MITRE ATT&CK actor intelligence, IOC explorer, raw data explorer, and AI-powered semantic threat analyst, all served via Docker
 - **IOC Explorer** — Search and filter IOCs by type, actor, and malware family with article cross-referencing and source breakdown
-- **Live Pipeline Status** — Sidebar indicators for Snowflake, Neo4j, Kafka, and data freshness
+- **Live Pipeline Status** — Sidebar indicators for Snowflake, Neo4j, Kafka, IOCs, data freshness, and RAG API
 - **Prefect Orchestration** — 4 scheduled flows running in Docker: ingestion every 24 hours, enrichment and storage loading every 6 hours, IOC loading every 6 hours, S3 archival every 6 hours
 - **Kafka-Backed Event Bus** — Uses 4 Kafka topics with decoupled producers and consumers to improve reliability and enable message replay
 - **Test Suite** — 21 pytest tests across enrichment, producers, consumers, and loaders with 86% code coverage, running automatically on every push via GitHub Actions
 - **Config Validation** — startup validator checks all required fields, detects unfilled placeholder values, and validates numeric ranges before the pipeline runs
-- **Config-Driven** — YAML-based configuration for sources, topics, and pipeline behavior
-- **Containerized** — Full Docker Compose setup with persistent volumes for Kafka, Neo4j, Prefect server, flow runner, and dashboard
+- **Config-Driven** — YAML-based configuration for sources, topics, retrieval settings, and pipeline behavior
+- **Containerized** — Full Docker Compose setup with persistent volumes for Kafka, Neo4j, Weaviate, Ollama, Prefect server, flow runner, and dashboard
 
 ---
 
@@ -186,7 +205,7 @@ flowchart TD
 ### Prerequisites
 
 - [Docker](https://www.docker.com/) & Docker Compose
-- [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or Anaconda
+- [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or Anaconda (Optional)
 - [NewsAPI](https://newsapi.org/) API key
 - [AlienVault OTX](https://otx.alienvault.com/) API key
 - [Abuse.ch](https://hunting.abuse.ch/api/) API key
@@ -223,7 +242,7 @@ conda activate osint
 docker compose up
 ```
 
-This starts Kafka, Neo4j, the Prefect server at `http://localhost:4200`, the Streamlit dashboard at `http://localhost:8501`, and automatically deploys and runs all 4 scheduled flows:
+This starts Kafka, Neo4j, Weaviate, Ollama, the Prefect server at `http://localhost:4200`, the RAG API at `http://localhost:8000`, the Streamlit dashboard at `http://localhost:8501`, and automatically deploys and runs all 4 scheduled flows:
 
 - `osint-ingestion-flow` — runs all 5 ingestion producers every 24 hours
 - `enrichment-loader-flow` — runs NLP enrichment, Snowflake loader, and Neo4j graph builder every 6 hours
@@ -262,13 +281,16 @@ docker compose down
 ```text
 osint-threat-intel-pipeline/
 |-- .github/workflows/    # GitHub Actions CI and code quality workflows
+|-- api/                  # FastAPI RAG API
 |-- config/               # YAML configuration files and validator
 |-- dashboard/            # Streamlit dashboard and page sections
-|   |-- _sections/        # Overview, threat map, actor graph, actor intel, IOC explorer, raw data
+|   |-- _sections/        # Overview, threat map, actor graph, actor intel, IOC explorer, raw data, semantic search
+|-- docs/                 # Screenshots
 |-- flows/                # Prefect flow definitions and deployment script
 |-- ingestion/            # News, OTX, RSS, Abuse.ch, and MITRE ATT&CK producers
 |-- processing/           # NLP enrichment, entity extraction, Kafka consumer
-|-- storage/              # Snowflake, IOC, Neo4j, and S3 loaders
+|-- services/             # LLM client and shared service utilities
+|-- storage/              # Snowflake, IOC, Neo4j, S3, and vector store loaders
 |-- tests/                # pytest test suite for ingestion, processing, and storage
 |-- docker-compose.yml    # Container orchestration
 |-- Dockerfile            # Container image definition

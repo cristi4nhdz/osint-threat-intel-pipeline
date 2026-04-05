@@ -302,6 +302,8 @@ ACTOR_NORMALIZE = {
     "hidden cobra": "Lazarus Group",
     "guardians of peace": "Lazarus Group",
     "zinc": "Lazarus Group",
+    "the Lazarus Group": "Lazarus Group",
+    "the lazarus group": "Lazarus Group",
     # Sandworm Team
     "sandworm": "Sandworm Team",
     "sandworm team": "Sandworm Team",

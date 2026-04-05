@@ -135,6 +135,21 @@ def run_neo4j_loader():
 
 
 @task
+def run_embedding_loader():
+    result = subprocess.run(
+        ["python", "-m", "storage.run_embedding_loader"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    print(result.stdout)
+    if result.returncode != 0:
+        print(result.stderr)
+        raise Exception(f"Embedding loading failed: {result.stderr}")
+
+
+@task
 def run_ioc_loader():
     result = subprocess.run(
         ["python", "-m", "storage.run_ioc_loader"],
@@ -179,6 +194,7 @@ def enrichment_loader_flow():
     run_enrichment()
     run_snowflake_loader()
     run_neo4j_loader()
+    run_embedding_loader()
 
 
 @flow

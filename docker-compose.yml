@@ -32,11 +32,43 @@ services:
       NEO4J_AUTH: neo4j/password
     volumes:
       - neo4j-data:/data
+
+  weaviate:
+    image: semitechnologies/weaviate:1.27.0
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      DEFAULT_VECTORIZER_MODULE: "none"
+      PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+    volumes:
+      - weaviate-data:/var/lib/weaviate
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password", "RETURN 1;"]
-      interval: 5s
-      retries: 10
-      start_period: 5s
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    entrypoint: >
+      sh -c "
+        echo 'Starting Ollama...' &&
+        ollama serve &
+        sleep 5 &&
+        echo 'Pulling llama3:8b if missing...' &&
+        ollama pull llama3:8b &&
+        echo 'Ollama model ready.' &&
+        wait
+      "
 
   prefect-server:
     image: prefecthq/prefect:3-latest
@@ -56,33 +88,37 @@ services:
     build: .
     restart: on-failure
     depends_on:
-      prefect-server:
-        condition: service_healthy
-      kafka:
-        condition: service_started
-      neo4j:
-        condition: service_healthy
+      - prefect-server
+      - kafka
+      - neo4j
+      - weaviate
     environment:
       PREFECT_API_URL: http://prefect-server:4200/api
       NEO4J_URI: bolt://neo4j:7687
       KAFKA_BOOTSTRAP: kafka:29092
+      WEAVIATE_URL: http://weaviate:8080
     volumes:
       - ./logs:/app/logs
-    command: conda run -n osint python -m flows.deploy_flows
+
+  rag-api:
+    build: .
+    restart: on-failure
+    depends_on:
+      weaviate:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+    command: conda run -n osint python -m api.rag_api
 
   dashboard:
     build: .
     restart: on-failure
     depends_on:
-      flows:
-        condition: service_started
-      kafka:
-        condition: service_started
-      neo4j:
-        condition: service_healthy
-    environment:
-      NEO4J_URI: bolt://neo4j:7687
-      KAFKA_BOOTSTRAP: kafka:29092
+      - rag-api
     ports:
       - "8501:8501"
     command: conda run -n osint streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0
@@ -92,3 +128,5 @@ volumes:
   kafka-data:
   neo4j-data:
   prefect-data:
+  weaviate-data:
+  ollama-data:

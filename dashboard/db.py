@@ -33,6 +33,12 @@ def get_neo4j():
     return GraphDatabase.driver(n["uri"], auth=(n["user"], n["password"]))
 
 
+def get_rag_api_url() -> str:
+    """Get RAG API URL from config."""
+    config = load_config()
+    return config["rag"]["api_url"]
+
+
 def sf_query(sql: str) -> pd.DataFrame:
     """Run a Snowflake query and return a DataFrame."""
     conn = get_snowflake()
